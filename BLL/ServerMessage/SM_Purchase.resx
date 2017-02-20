@@ -1,0 +1,357 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="SMSG_PUR_E00001" xml:space="preserve">
+    <value>您输入的客户订单号不存在，请输入正确的客户订单号！</value>
+    <comment>S:Server；  MSG:message；  PUR:采购；   E:error；  W:warning</comment>
+  </data>
+  <data name="SMSG_PUR_E00002" xml:space="preserve">
+    <value>您未输入的承接单位，请查询后输入正确的承接单位</value>
+  </data>
+  <data name="SMSG_PUR_E00003" xml:space="preserve">
+    <value>您输入的承接单位不正确，请查询后重新输入有效的承接单位</value>
+  </data>
+  <data name="SMSG_PUR_E00004" xml:space="preserve">
+    <value>您没有选择任何采购物料，请您选择您所需要采购的物料</value>
+  </data>
+  <data name="SMSG_PUR_E00005" xml:space="preserve">
+    <value>第{0}行的物料编号未输入，请查询后输入正确的物料编号</value>
+  </data>
+  <data name="SMSG_PUR_E00006" xml:space="preserve">
+    <value>第{0}行输入的数量为无效数据，请您输入正确的数量</value>
+  </data>
+  <data name="SMSG_PUR_E00007" xml:space="preserve">
+    <value>第{0}行输入的材料规格及要求的BYTE数超过200BYTE，请您重新输入正确的材料规格及要求</value>
+  </data>
+  <data name="SMSG_PUR_E00008" xml:space="preserve">
+    <value>第{0}行输入的单价的BYTE数超过10BYTE，请您重新输入正确的单价</value>
+  </data>
+  <data name="SMSG_PUR_E00009" xml:space="preserve">
+    <value>第{0}行输入的单价为无效数值，请您重新输入正确的有效单价</value>
+  </data>
+  <data name="SMSG_PUR_E00010" xml:space="preserve">
+    <value>第{0}行输入的交货日期未输入，请您重新输入正确的有效日期</value>
+  </data>
+  <data name="SMSG_PUR_E00011" xml:space="preserve">
+    <value>第{0}行输入的交货日期为无效日期，请您输入正确的交货日期</value>
+  </data>
+  <data name="SMSG_PUR_E00012" xml:space="preserve">
+    <value>第{0}行输入的版本号的BYTE数超过40BYTE，请您重新输入正确的版本号</value>
+  </data>
+  <data name="SMSG_PUR_E00013" xml:space="preserve">
+    <value>第{0}行输入的备注的BYTE数超过512BYTE，请您重新输入正确的备注</value>
+  </data>
+  <data name="SMSG_PUR_E00014" xml:space="preserve">
+    <value>您输入的注:(256文字)的BYTE数超过512BYTE，请您重新输入正确的注:(256文字)</value>
+  </data>
+  <data name="SMSG_PUR_E00015" xml:space="preserve">
+    <value>第{0}行输入的FAX为无效FAX，请您输入正确的FAX</value>
+  </data>
+  <data name="SMSG_PUR_E00016" xml:space="preserve">
+    <value>您输入的FAX的BYTE数超过20BYTE，请您重新输入正确的FAX</value>
+  </data>
+  <data name="SMSG_PUR_E00017" xml:space="preserve">
+    <value>您输入的批准人超过了10个字节，请您重新输入</value>
+  </data>
+  <data name="SMSG_PUR_E00018" xml:space="preserve">
+    <value>您输入的审核人超过了10个字节，请您重新输入</value>
+  </data>
+  <data name="SMSG_PUR_E00019" xml:space="preserve">
+    <value>您输入的编制人超过了10个字节，请您重新输入</value>
+  </data>
+  <data name="SMSG_PUR_E00020" xml:space="preserve">
+    <value>您输入的签收人超过了10个字节，请您重新输入</value>
+  </data>
+  <data name="SMSG_PUR_E00021" xml:space="preserve">
+    <value>您没有选择要删除的对象，请您选择要删除的对象！</value>
+  </data>
+  <data name="SMSG_PUR_E00022" xml:space="preserve">
+    <value>您选择的外购单{0}已被批准，不可重复批准。</value>
+  </data>
+  <data name="SMSG_PUR_E00023" xml:space="preserve">
+    <value>您选择的外购单{0}已通过审核，不可重复审核。</value>
+  </data>
+  <data name="SMSG_PUR_E00024" xml:space="preserve">
+    <value>已被签收的外购单不可以被删除，您选择的外购单{0}已被签收，请您重新选择要删除的对象。</value>
+    <comment>{0}为外购单号。若复数时，已逗号分隔。</comment>
+  </data>
+  <data name="SMSG_PUR_E00025" xml:space="preserve">
+    <value>已被经办的外协加工调度单不可以被删除，您选择的外协加工调度单{0}已经办，请您重新选择要删除的对象。</value>
+    <comment>{0}为外协加工调度单号。若复数时，已逗号分隔。</comment>
+  </data>
+  <data name="SMSG_PUR_E00026" xml:space="preserve">
+    <value>第{0}行的估价未输入，请您输入正确的数字</value>
+  </data>
+  <data name="SMSG_PUR_E00027" xml:space="preserve">
+    <value>第{0}行的单位未输入，请您输入正确的数据</value>
+  </data>
+  <data name="SMSG_PUR_E00028" xml:space="preserve">
+    <value>第{0}行的加工工艺未输入，请您输入正确的数据</value>
+  </data>
+  <data name="SMSG_PUR_E00029" xml:space="preserve">
+    <value>调入单位为空，请输入调入单位</value>
+  </data>
+  <data name="SMSG_PUR_E00030" xml:space="preserve">
+    <value>调度单种类未选择，请选择调度单种类</value>
+  </data>
+  <data name="SMSG_PUR_E00031" xml:space="preserve">
+    <value>调度单紧急状态未选择，请选择调度单的紧急状态</value>
+  </data>
+  <data name="SMSG_PUR_E00032" xml:space="preserve">
+    <value>调度单所属单位未选择，请选择调度单的所属单位</value>
+  </data>
+  <data name="SMSG_PUR_E00033" xml:space="preserve">
+    <value>未填写需要添加的数据，请填写正确的数据</value>
+  </data>
+  <data name="SMSG_PUR_E00034" xml:space="preserve">
+    <value>操作失败</value>
+  </data>
+  <data name="SMSG_PUR_E00035" xml:space="preserve">
+    <value>您输入的采购计划单号有误，请查询后输入正确的采购计划单号</value>
+  </data>
+  <data name="SMSG_PUR_E00036" xml:space="preserve">
+    <value>您输入的采购计划单号不存在，请重新输入正确的采购计划单号！</value>
+  </data>
+  <data name="SMSG_PUR_E00037" xml:space="preserve">
+    <value>您未输入采购计划单号，请输入</value>
+  </data>
+  <data name="SMSG_PUR_E00038" xml:space="preserve">
+    <value>您未输入的所属部门，请查询后输入正确的所属部门</value>
+  </data>
+  <data name="SMSG_PUR_E00039" xml:space="preserve">
+    <value>第{0}行输入的估价的BYTE数超过10BYTE，请您重新输入正确的估价</value>
+  </data>
+  <data name="SMSG_PUR_E00040" xml:space="preserve">
+    <value>第{0}行输入的估价为无效数值，请您重新输入正确的有效估价</value>
+  </data>
+  <data name="SMSG_PUR_E00041" xml:space="preserve">
+    <value>第{0}行输入的计划单号的BYTE数超过20BYTE，请您重新输入正确的计划单号</value>
+  </data>
+  <data name="SMSG_PUR_E00042" xml:space="preserve">
+    <value>第{0}行输入的数量的BYTE数超过10BYTE，请您重新输入正确的数量</value>
+  </data>
+  <data name="SMSG_PUR_E00043" xml:space="preserve">
+    <value>送货单号为{0}的送货单信息有误，请重新确认后再进行操作！</value>
+  </data>
+  <data name="SMSG_PUR_E00044" xml:space="preserve">
+    <value>送货单号为{0}的送货单已进行过审核操作，不可重复审核！</value>
+  </data>
+  <data name="SMSG_PUR_E00045" xml:space="preserve">
+    <value>送货单号为{0}的送货单已打印，不可删除！</value>
+  </data>
+  <data name="SMSG_PUR_E00046" xml:space="preserve">
+    <value>第{0}行输入的估价为无效数值，请您重新输入正确的有效估价</value>
+  </data>
+  <data name="SMSG_PUR_E00047" xml:space="preserve">
+    <value>该外购单还未批准，请先批准再签收</value>
+  </data>
+  <data name="SMSG_PUR_E00048" xml:space="preserve">
+    <value>批准人未指定时，不可进行批准操作。请选择批准人后再进行批准操作</value>
+  </data>
+  <data name="SMSG_PUR_E00049" xml:space="preserve">
+    <value>审核人未指定时，不可进行审核操作。请选择审核人后再进行审核操作</value>
+  </data>
+  <data name="SMSG_PUR_E00050" xml:space="preserve">
+    <value>您输入的客户订单号不正确，请查询后输入正确的客户订单号</value>
+  </data>
+  <data name="SMSG_PUR_E00051" xml:space="preserve">
+    <value>该外购单状态不是已签收，请签收后再打印</value>
+  </data>
+  <data name="SMSG_PUR_E00052" xml:space="preserve">
+    <value>第{0}行的每件数量未输入，请输入正确的每件数量</value>
+  </data>
+  <data name="SMSG_PUR_E00053" xml:space="preserve">
+    <value>第{0}行的【每件数量】栏输入不正确，请输入正确的每件数量</value>
+  </data>
+  <data name="SMSG_PUR_E00054" xml:space="preserve">
+    <value>第{0}行的【每件数量】栏输入的内容大于10字节，请重新输入10字节以内的每件数量</value>
+  </data>
+  <data name="SMSG_PUR_E00055" xml:space="preserve">
+    <value>第{0}行的件数未输入，请输入正确的件数</value>
+  </data>
+  <data name="SMSG_PUR_E00056" xml:space="preserve">
+    <value>第{0}行的【件数】栏输入不正确，请输入正确的件数</value>
+  </data>
+  <data name="SMSG_PUR_E00057" xml:space="preserve">
+    <value>第{0}行的【件数】栏输入的内容大于10字节，请重新输入10字节以内的件数</value>
+  </data>
+  <data name="SMSG_PUR_E00058" xml:space="preserve">
+    <value>第{0}行的零头未输入，请输入正确的零头</value>
+  </data>
+  <data name="SMSG_PUR_E00059" xml:space="preserve">
+    <value>第{0}行的【零头】栏输入不正确，请输入正确的零头</value>
+  </data>
+  <data name="SMSG_PUR_E00060" xml:space="preserve">
+    <value>第{0}行的【零头】栏输入的内容大于10字节，请重新输入10字节以内的零头</value>
+  </data>
+  <data name="SMSG_PUR_E00061" xml:space="preserve">
+    <value>第{0}行的实收数量未输入，请输入正确的实收数量</value>
+  </data>
+  <data name="SMSG_PUR_E00062" xml:space="preserve">
+    <value>第{0}行的【实收数量】栏输入不正确，请输入正确的实收数量</value>
+  </data>
+  <data name="SMSG_PUR_E00063" xml:space="preserve">
+    <value>第{0}行的【实收数量】栏输入的内容大于10字节，请重新输入10字节以内的实收数量</value>
+  </data>
+  <data name="SMSG_PUR_E00064" xml:space="preserve">
+    <value>第{0}行的【备注】栏输入的内容大于512字节，请重新输入512字节以内的备注</value>
+  </data>
+  <data name="SMSG_PUR_E00065" xml:space="preserve">
+    <value>画面输入的采购计划单号已发生变化，请按下【导入】按钮后，重新导入采购计划单数据</value>
+  </data>
+  <data name="SMSG_PUR_E00066" xml:space="preserve">
+    <value>第{0}行的【供货商】栏未输入，请选择供货商&lt;br/&gt;</value>
+  </data>
+  <data name="SMSG_PUR_E00067" xml:space="preserve">
+    <value>第{0}行的【单价】栏未输入，请输入有效的单价&lt;br/&gt;</value>
+  </data>
+  <data name="SMSG_PUR_E00068" xml:space="preserve">
+    <value>第{0}行的【单价】栏输入内容已超过{1}BYTE数，请输入有效的单价&lt;br/&gt;</value>
+  </data>
+  <data name="SMSG_PUR_E00069" xml:space="preserve">
+    <value>第{0}行的【估价】栏未输入，请输入有效的估价&lt;br/&gt;</value>
+  </data>
+  <data name="SMSG_PUR_E00070" xml:space="preserve">
+    <value>第{0}行的【估价】栏输入内容已超过{1}BYTE数，请输入有效的估价&lt;br/&gt;</value>
+  </data>
+  <data name="SMSG_PUR_E00071" xml:space="preserve">
+    <value>第{0}行的【采购数量】栏未输入，请输入有效的采购数量&lt;br/&gt;</value>
+  </data>
+  <data name="SMSG_PUR_E00072" xml:space="preserve">
+    <value>第{0}行的【采购数量】栏输入的数量大于待购数量，请输入有效的采购数量&lt;br/&gt;</value>
+  </data>
+  <data name="SMSG_PUR_E00073" xml:space="preserve">
+    <value>第{0}行的【采购数量】栏输入内容已超过{1}BYTE数，请输入有效的采购数量&lt;br/&gt;</value>
+  </data>
+  <data name="SMSG_PUR_E00074" xml:space="preserve">
+    <value>第{0}行的【外协数量】栏未输入，请输入有效的外协数量&lt;br/&gt;</value>
+  </data>
+  <data name="SMSG_PUR_E00075" xml:space="preserve">
+    <value>第{0}行的【外协数量】栏输入的数量大于待购数量，请输入有效的外协数量&lt;br/&gt;</value>
+  </data>
+  <data name="SMSG_PUR_E00076" xml:space="preserve">
+    <value>第{0}行的【外协数量】栏输入内容已超过{1}BYTE数，请输入有效的外协数量&lt;br/&gt;</value>
+  </data>
+  <data name="SMSG_PUR_E00077" xml:space="preserve">
+    <value>第{0}行的【外协单位】栏未输入，请选择外协单位&lt;br/&gt;</value>
+  </data>
+  <data name="SMSG_PUR_S00001" xml:space="preserve">
+    <value>操作成功</value>
+  </data>
+</root>

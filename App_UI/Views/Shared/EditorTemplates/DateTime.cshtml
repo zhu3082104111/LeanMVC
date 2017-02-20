@@ -1,0 +1,11 @@
+﻿
+@Html.TextBoxFor(a => a)
+
+<script type="text/javascript">
+    $(function () {
+        $("#@Html.NameForModel()").datetimepicker({
+            showSecond: true,
+            timeFormat: 'hh:mm:ss'
+        });
+    });
+</script>

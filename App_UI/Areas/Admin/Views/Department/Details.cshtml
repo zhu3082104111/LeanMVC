@@ -1,0 +1,12 @@
+﻿<div class="ui-widget-header">
+     @Html.Partial("Button_Back_List")
+</div>
+<fieldset>
+    <legend>@lang.Details</legend>
+    @Html.DisplayForModel()
+</fieldset>
+<div id="button" style="text-align: center">
+    @Ajax.ActionLink(lang.Back, "Index", null, null, new AjaxOptions { UpdateTargetId = "Main" }, new { id = "button_back" })
+    @Ajax.ActionLink(lang.Edit, "Edit", null, new { id = Model.DeptId }, new AjaxOptions { UpdateTargetId = "Main" })
+    @Ajax.ActionLink(lang.Delete, "Delete", null, new { id = Model.DeptId }, new AjaxOptions { UpdateTargetId = "Main", HttpMethod = "Delete", Confirm = "您确定要删除该记录吗？该操作不可恢复！" })
+</div>

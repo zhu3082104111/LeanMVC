@@ -1,0 +1,15 @@
+﻿body {
+}
+
+.datagrid > div {
+        margin:auto;
+    }
+
+    ._text_input
+    {
+        width: 100px;
+    }
+    .datagrid td.datagrid-td-merged > div
+       {
+           height:100%;
+       }

@@ -1,0 +1,344 @@
+﻿@using App_UI.Resource.ClientMessage
+@using App_UI.Resource.ViewText.Common
+@using App_UI.Resource.ViewText.Produce
+@using Extensions
+@using Model
+
+@{
+    ViewBag.Title = "总装调度单";
+}
+@section head{
+    <link rel="stylesheet" href="~/Content/css/Produce/FAScheduleBill.css" />
+    <script src="~/Scripts/common/dialog.js"></script>
+
+    <script>
+
+        //搜索功能
+        var searchFun = function() {
+            $("#searchForm").form("submit", {
+                //form提交
+                url: "/Produce/FAScheduleBill/GetData",
+                onSubmit: function(param) { //除表单外的数据(分页)
+                    var pager = $("#tabBill").datagrid("getPager");
+                    var pagerOptions = $(pager).pagination("options");
+                    param.rows = pagerOptions.pageSize;
+                    param.page = 1;
+                },
+                success: function(data) {
+                    $("#tabBill").datagrid("loadData", eval('(' + data + ')')); //重新加载数据
+                }
+            });
+        };
+
+        //删除选中的一条或多条数据
+        var deleteFun = function() {
+            var row = $("#tabBill").datagrid('getSelections');
+            if (row.length > 0) {
+                var check = "";
+                for (var i = 0; i < row.length; i++) {
+                    check += row[i].AssemblyDispatchID + ",";
+                }
+                check = check.substring(0, check.length - 1);
+                $.messager.confirm("@VT_Common.Tips", "@VT_Common.ConfirmDelete", function(deleteOK) {
+                    if (deleteOK) {
+                        $.post("/Produce/FAScheduleBill/Delete", { orderNoString: check }, function(data) {
+                            var _data = eval('(' + data + ')');
+                            if (_data.Result == true) {
+                                $.messager.alert("@VT_Common.Info", _data.Message);
+                                $("#tabBill").datagrid("reload");
+                            } else {
+                                $.messager.alert("@VT_Common.Info", _data.Message);
+                                //do something another...
+                            }
+                        });
+                    }
+                });
+            } else {
+                $.messager.alert("@VT_Common.Tips", "@VT_Common.PleaseSelect");
+            }
+        };
+        //关闭当前标签
+        var closeFun = function() {
+            parent.closeTab();
+        };
+
+
+        //转到新增页面--测试使用
+        var showNewFun = function() {
+            parent.addTab("@VT_FAScheduleBill.AssemblePlanDetail", "/Produce/FAScheduleBill/AddNewBill?customerOrderId=TEST-M-01&customerOrderDetails=1&productId=TEST-P-01&prodAbbrev=RAC20648&&assemblyPlanNum=100");
+        };
+
+        //双击记录
+        function DblClickRow(index) {
+            var assemblyTicketId = $('#tabBill').datagrid('getRows')[index]['AssemblyDispatchID'];
+            parent.addTab("@VT_FAScheduleBill.PrintViewTitle", "/Produce/FAScheduleBill/PrintPreview?id=" + assemblyTicketId);
+            return false;
+        }
+
+
+        //生成大工票功能
+        var newFAWorkticket = function() {
+            var row = $("#tabBill").datagrid('getSelections');
+            if (row.length > 0) {
+                var check = "";
+                for (var i = 0; i < row.length; i++) {
+                    check += row[i].AssemblyDispatchID + ",";
+                }
+                check = check.substring(0, check.length - 1);
+                $.post("/Produce/FAScheduleBill/NewFAWorkticket", { orderNoString: check }, function(data) {
+                    var _data = eval('(' + data + ')');
+                    if (_data.Result == true) {
+                        $("#tabBill").datagrid("reload");
+                    }
+                    $.messager.alert("@VT_Common.Info", _data.Message);
+                });
+            } else {
+                $.messager.alert("@VT_Common.Tips", "@VT_Common.PleaseSelect");
+            }
+        };
+
+        //编辑
+        updateBill = function(options) {
+            var selectedRows = $("#tabBill").datagrid("getSelections");
+            var selectedLen = selectedRows.length;
+            if (selectedLen > 0) {
+                if (selectedLen == 1) {
+                    var assemblyTicketId = selectedRows[0]["AssemblyDispatchID"];
+                    if (selectedRows[0]["AttrCd"] == "@Constant.FAScheduleBill.DISPATCH_STATUS") {
+                        parent.addTab("@VT_FAScheduleBill.AssemblePlanDetail", "/Produce/FAScheduleBill/UpdateBill?id=" + assemblyTicketId);
+                    } else {
+                        $.messager.alert("@VT_Common.Tips", "@CM_Produce.MSG40301002");
+                    }
+                } else {
+                    $.messager.alert("@VT_Common.Tips", "@CM_Produce.CK40502001");
+                }
+            } else {
+                $.messager.alert("@VT_Common.Tips", "@CM_Produce.CK40502002");
+            }
+        };
+
+        //打印预览
+        printPreview = function(id) {
+            parent.addTab("@VT_FAScheduleBill.PrintViewTitle", "/Produce/FAScheduleBill/PrintPreview?id=" + id);
+        };
+
+        //删除大工票功能
+        //var delFAWorkticket = function() {
+        //    var row = $("#tabBill").datagrid('getSelections');
+        //    if (row.length > 0) {
+        //        var check = "";
+        //        for (var i = 0; i < row.length; i++) {
+        //            check += row[i].OrderNo + ",";
+        //        }
+        //        check = check.substring(0, check.length - 1);
+
+        //        $.post("/Produce/FAScheduleBill/DelFAWorkticket", { orderNoString: check }, function(data) {
+        //            var _data = eval('(' + data + ')');
+        //            if (_data.Result == true) {
+        //                $("#tabBill").datagrid("reload");
+        //            } else {
+        //                alert("删除大工票失败,请重新操作");
+        //                do something another...
+        //            }
+        //        });
+
+        //    } else {
+        //        $.messager.alert("友情提示", "请您选择要删除的数据");
+        //    }
+        //};
+
+        /********************************************放大镜功能 开始************************************************/
+
+        //产品型号(即产品略称)
+        ShowProductTypeFun = function () {
+            $("#dlgProductTypDiv").dialog({
+                buttons: "#btnCOID",
+                cache: false,
+                height: 450,
+                href: "/Technology/ProdInfo/ShowProdInfoDialog?singleSelect=true",
+                modal: true,
+                width: 900,
+                title: "<span style=\" font-family:Tahoma,Verdana,微软雅黑,新宋体;font-size:16px;margin:0px;padding:0px; \">产品信息一览</span>"
+            });
+            $("#dlgProductTypDiv").dialog("open");
+            $("#dlgProductTypDiv").dialog("move", { top: $(document).scrollTop() + ($(window).height() - 250) * 0.5 });
+        };
+        //添加产品型号(即产品略称)
+        AddProductTypeFun = function () {
+            //遍历弹出框中所选择的记录
+            for (var i = 0; i < $("#ProdInfoDialogTable").datagrid("getSelections").length; i++) {
+                $("#txtProductType").val($("#ProdInfoDialogTable").datagrid("getSelections")[i]["ProductAbbreviation"]); //设置隐藏输入框 ClientID 值
+            }
+            CloseDialogFun(1); //关闭弹出框
+        };
+
+        CloseDialogFun = function (paraDialogNO) {
+            if (paraDialogNO == "1") {
+                $("#dlgProductTypDiv").dialog("close");
+            }
+        };
+        
+        //打开“客户订单”对话框
+        window.showOrderDlgFun = function (ele) {
+            CommonDlgFun.ShowOrderDlg.call(ele, '#orderDlg');
+        };
+
+        //“客户订单”对话框“选择”按钮
+        window.orderDlgOKFun = function () {
+            var row = CommonDlgFun.GetSelectedOrder();
+            if (!row) {
+                $.messager.alert("@VT_Common.Tips", "@CM_Produce.CK40502002");
+                return;
+            }
+            $("#orderDlg").dialog("close").data("currTarget").parent().prev().val(row["ClientOrderID"]);
+
+        };
+        /********************************************放大镜功能 结束************************************************/
+
+
+        //列属性:field(字段,非空) ,title(列名,非空),width(默认80),sortable(默认false),editor(默认null),formatter(默认-函数)
+        var columns = [[
+            ["AssemblyDispatchID", "@VT_FAScheduleBill.AssemblyDispatchID", 150, true, null,function(value, row, index) {
+                var htmlStr = "";
+                htmlStr += ("<a href='#' onclick='printPreview(" + "\"" + value + "\"" + ")';" + ">" + value + "</a>");
+                return htmlStr;
+            }],
+            ["AssemblyTicketID", "@VT_FAScheduleBill.AssemblyTicketID", 120, true],
+            ["ProdAbbrev", "@VT_FAScheduleBill.ProdAbbrev", 120, true],
+            ["CustomerName", "@VT_FAScheduleBill.CustomerName", 120, true],
+            ["SchedulingOrderDate", "@VT_FAScheduleBill.SchedulingOrderDate", 120, true, null, function (value, row, index) {
+                return DtToString(value);
+            }],
+            ["PlanDeliveryDate", "@VT_FAScheduleBill.PlanDeliveryDate", 120, true, null, function (value, row, index) {
+                return DtToString(value);
+            }],
+            ["Team", "@VT_FAScheduleBill.Team", 120, true],
+            ["AssemblyPlanNum", "@VT_FAScheduleBill.AssemblyPlanNum", 120, true],
+            ["ActualAssemblyNum", "@VT_FAScheduleBill.ActualAssemblyNum", 120, true],
+            ["WareHouseDate", "@VT_FAScheduleBill.WareHouseDate", 120, true, null, function(value, row, index) {
+                return DtToString(value);
+            }],
+            ["Remarks", "@VT_FAScheduleBill.Remarks", 120, true],
+            ["DispatchStatus", "@VT_FAScheduleBill.DispatchStatus", 120, true, null]
+        ]];
+
+        $(function() {
+            Common.Functions.createDataGrid({
+                //创建datagrid,详细内容参见functions.js
+                target: $("#tabBill"),//table容器,必须
+                url: "/Produce/FAScheduleBill/GetData", //"/Admin/UserInfo/Get",//获取数据的地址,必须
+                columns: columns,//列属性,必须
+                idField: "AssemblyDispatchID",//标识字段
+                //toolbar: $("#toolbar"),//工具栏
+                checkbox: true,//是否显示checkbox
+                maxWidth: 1000,//最大宽度
+                maxHeight: 250,//最大高度
+                //pageSize: 10,
+                //pageList: [5, 10, 20, 30],
+                onDblClickRow: DblClickRow,
+                onBeforeLoad: function(queryParams) { //可以添加一些额外参数,主要用于查询条件
+                    var arr = $("#searchForm").serializeArray();
+                    $.each(arr, function() {
+                        queryParams[this.name] = this.value;
+                    });
+                },
+                onLoadError: function() {
+                    $.messager.alert("@VT_Common.Info", "@CM_Common.MSG0002");
+                },
+                onCreating: function(data) { //数据成功加载
+                    //do something...
+                }
+            });
+
+            //按钮事件
+            $("#btnDelete").bind('click', deleteFun);
+            $("#btnClose").bind('click', closeFun);
+            $("#btnNewFAWorkticket").bind('click', newFAWorkticket);
+            $("#btnSearch").bind('click', searchFun);
+            $("#btnUpdate").bind('click', updateBill);
+            //$("#btnNew").bind('click', showNewFun);
+        });
+
+    </script>
+}
+<div class="buttons" style="width: 100%; text-align: right;">
+    @UserHelpers.ButtonForCreateTicket("","btnNewFAWorkticket","")
+     @*<a id="btnNew" class="easyui-linkbutton" iconcls="icon-add">新增</a>*@
+    @UserHelpers.ButtonForUpdate("","btnUpdate")
+    @UserHelpers.ButtonForDelete("", "btnDelete")
+    @UserHelpers.ButtonForClose("", "btnClose")
+    <span style="width: 100px; margin-right: 10%">&nbsp;</span>
+</div>
+
+@UserHelpers.Line()
+
+@UserHelpers.Company_Title(VT_Common.CompanyName)
+
+@UserHelpers.Title(VT_FAScheduleBill.IndexTitle)
+<br />
+
+<div style="width: 100%; text-align: center;">
+    <div id="toolbar" style="width: 1000px; margin: auto;">
+        <form id="searchForm" class="Search_Form" method="post">
+            <div class="table">
+                <div class="row">
+                    <div>@VT_FAScheduleBill.CustomerOrderNum：</div>
+                    <div>
+                         @UserHelpers.InputReadOnly("txtCustomerOrderNum","showOrderDlgFun(this)","20")
+                    </div>
+                    <div>@VT_FAScheduleBill.ProductionUnits：</div>
+                    <div>
+                        @UserHelpers.SelectDepartment(Constant.FAScheduleBill.DEPT, "txtProductionUnits", "txtProductionUnits")
+                    </div>
+                    <div>@VT_FAScheduleBill.Team：</div>
+                    <div>
+                        @UserHelpers.AutoSearch("team","Id","txtTeam")
+                    </div>
+                    <div>@VT_FAScheduleBill.PlanDeliveryDate：</div>
+                    <div>
+                        @UserHelpers.TimeBeginInput("txtDateFrom","txtDateFrom","txtDateFrom")~@UserHelpers.TimeEndInput("txtDateToo","txtDateToo","txtDateToo")
+                    </div>
+                </div>
+                <div class="row">
+                    <div>@VT_FAScheduleBill.ProdAbbrev：</div>
+                    <div>
+                        @UserHelpers.Input("txtProductType",200,200,"ShowProductTypeFun()")
+                    </div>
+                    <div>@VT_FAScheduleBill.AssemblyDispatchID：</div>
+                    <div>
+                        @UserHelpers.InputSimple("txtSchedulOrder",new {size=20,maxlength=20})
+                    </div>
+                    <div>@VT_FAScheduleBill.DispatchStatus：</div>
+                    <div>
+                        @UserHelpers.Select(Constant.FAScheduleBill.CURRENT_STATE, "txtCurrentState", "txtCurrentState")
+                    </div>
+                    <div>@UserHelpers.ButtonForSearch("", "btnSearch")</div>
+                    <div></div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<div class="datagrid" style="text-align: center; width: 100%;">
+    <table id="tabBill"></table>
+</div>
+
+<!-- Dialog -->
+@*产品型号dialog相关*@
+<div id="dlgDiv">
+    <div class="easyui-dialog" id="dlgProductTypDiv" closed="true">
+        <div id="btnCOID">@UserHelpers.ButtonForAdd("AddProductTypeFun()")
+            <span style="display: inline-block; margin: 0px; padding: 0px; width: 10px;"></span>
+            @UserHelpers.ButtonForClose("CloseDialogFun(1)")
+        </div>
+    </div>
+</div>
+
+@*客户订单号dialog相关*@
+<div>
+    <div id="orderDlg" data-options="buttons:'#orderDlgBtns'"></div>
+</div>
+<div id="orderDlgBtns" style="display: none;">
+    @UserHelpers.ButtonForChoose("orderDlgOKFun();")
+    @UserHelpers.ButtonForClose("$('#orderDlg').dialog('close');")
+</div>

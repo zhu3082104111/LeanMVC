@@ -1,0 +1,19 @@
+﻿@model string
+
+@Html.TextAreaFor(a=>a,new { @class = "ckeditor" })
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        if (CKEDITOR.instances['@Html.NameForModel()'])
+        {
+            CKEDITOR.remove(CKEDITOR.instances['@Html.NameForModel()']);
+        }
+
+        var editor= CKEDITOR.replace('@Html.NameForModel()');
+        //CKFinder.setupCKEditor( editor, '/ckeditor/ckfinder/' ) ;
+
+        $("input:submit").click(function(){
+            $("#@Html.NameForModel()").val(CKEDITOR.instances.@{ @Html.NameForModel() }.getData());  
+        });
+    });
+</script>

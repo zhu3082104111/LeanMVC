@@ -1,0 +1,49 @@
+﻿@{
+    ViewBag.Title = "Init";
+}
+
+<link rel="stylesheet" href="~/Content/css/Admin/userInfo.css" />
+<script type="text/javascript" src="~/Scripts/purchase/DeliveryOrderPrint.js"></script>
+<div class="buttons" style="width:100%;text-align:right;">    
+    <a class="easyui-linkbutton" iconcls='icon-add'">打印</a>
+    <a class="easyui-linkbutton" iconcls="icon-add">关闭</a>    
+    <span style="width:100px;margin-right:10%">&nbsp;</span>
+</div>
+<div style="width:100%;margin:20px 0;">
+    <hr style="width:100%;color:#95B8E7"/>
+</div>
+<div style="text-align:center;font-size:20px;">
+    杭州雷迪克汽车部件制造有限公司
+</div><br />
+<div style="text-align:center;font-size:20px;">
+    送货单
+</div><br />
+    <input type="hidden" id="data" value="@ViewBag.DELI_ODR_ID" />
+<div style="width:100%;text-align:center;margin-bottom:15px;">
+    <div style="width:95%;margin:auto;text-align:left;">
+        <form id="processForm" method ="post" >  
+            <table id="tablePlan">   
+                <tr>
+                    <td>收货单位：</td>
+                    <td>杭州雷迪克汽车部件有限公司</td>
+                    <td style ="padding-left :20px">送货日期：</td>
+                    <td>2013年10月28日</td>
+                    <td style ="padding-left :20px">送货单号：</td>
+                    <td>131010LDK0002</td>
+                </tr>   
+                <tr>    
+                   <td>送货单位：</td>
+                   <td>杭州祥美汽车配件厂</td>
+                   <td style ="padding-left :20px">送货人：</td>
+                   <td>小刘</td>
+                   <td style ="padding-left :20px">联系电话：</td>
+                   <td>13910001001</td>    
+                  
+                </tr>
+                 </table>
+        </form>
+    </div>
+</div>
+<div class="datagrid" style="text-align:center;width:100%;">
+    <table id="DeliveryOrderPrintTable" ></table>
+</div>

@@ -1,0 +1,68 @@
+﻿@using App_UI.Resource.ViewText.Common
+@using App_UI.Resource.ViewText.Purchase
+@using Model;
+
+<script src="~/Scripts/common/dialog.js" type="text/javascript"></script>
+<script src="~/Scripts/purchase/SupplierAccoutingList.js" type="text/javascript"></script>
+
+<div class="FunctionButton_Area" style="width:96%;text-align:right;">
+    @UserHelpers.ButtonForClose("parent.closeTab(gTitle)")
+</div>
+<div style="width:100%;margin:20px 0;">
+    <hr style="width:100%;color:#95B8E7"/>
+</div>
+<div style="text-align:center;font-size:20px;">
+    @UserHelpers.Title(@VT_SupplierAccoutingList.Title)
+</div><br/>
+<div class="div_main">
+    <div id="toolbar" class="div_search">
+        <form id="searchForm" class="Search_Form" method="post">
+            <table class="table_search" style="margin:auto;text-align:left;">
+                <tr>
+                    <td class="title">@VT_SupplierAccoutingList.CustomerNo</td>                  
+                    <td>@UserHelpers.Input("CustomerOrder")</td>
+                    <td class="title">@VT_SupplierAccoutingList.SupOrderNo</td>
+                    <td>@UserHelpers.Input("SupOrderID")</td>
+                    <td class="title">@VT_SupplierAccoutingList.MaterialNo</td>
+                    <td>@UserHelpers.Input("MaterielNo","ShowProdPartInfoScreenByAbbrev();")</td>
+                    <td class="title">@VT_SupplierAccoutingList.MaterialName</td>
+                    <td>@UserHelpers.Input("MaterielName","ShowProdPartInfoScreenByName();")</td>
+                </tr>
+                <tr>
+                    <td class="title">@VT_SupplierAccoutingList.Company</td>
+                    <td colspan="3" style ="text-align :left ">@UserHelpers.Input("SupCompName","ShowCompInfoScreen();")</td>
+                    <td class="title">@VT_SupplierAccoutingList.CompleteStatus</td>
+                    <td>@UserHelpers.SelectWidget(Constant.MasterSection.COMPLETE_STATUS, "Status", "Status")</td>
+                    <td class="title">@VT_SupplierAccoutingList.UrgentStatus</td>
+                    <td>@UserHelpers.SelectWidget(Constant.MasterSection.URGENT_STATE, "UrgentStatus", "UrgentStatus")</td>
+                </tr>
+                <tr>
+                    <td class="title">@VT_SupplierAccoutingList.DeliveryDate</td>
+                    <td colspan="3" style ="text-align :left ">@UserHelpers.TimeInput("DeliveryDateS")&nbsp;&nbsp;
+                        @VT_SupplierAccoutingList.DeliveryDateTo
+                        &nbsp;&nbsp; @UserHelpers.TimeInput("DeliveryDateE")</td>
+                    <td colspan="4" style ="text-align :right ">@UserHelpers.ButtonForSearch("search_Shd_Fun()")</td>
+                </tr>
+            </table>
+        </form>
+    </div>
+    <div class="datagrid" style="text-align:center;width:100%;">
+        <table id="supplierAccoutingListTable" ></table>
+    </div>
+</div>
+
+<!-- *************************************************************** 子查询画面START ******************************************************** -->
+<!-- 供货商选择对话框 -->
+<div class="easyui-dialog" id="CompSelectDiv" closed="true" data-options="buttons:'#companySelect',modal:true"></div>
+<div id="companySelect">
+    @UserHelpers.ButtonForChoose("SelCompAndCloseDialogFun('','SupCompName','0','CompSelectDiv')")
+    @UserHelpers.ButtonForClose("CloseDialogFun('CompSelectDiv')")
+</div>
+
+<!-- 物料选择对话框 -->
+<div class="easyui-dialog" id="ProdPartSelectDiv" closed="true" data-options="buttons:'#prodPartSelect',modal:true"></div>
+<div id="prodPartSelect">
+    @UserHelpers.ButtonForChoose("SelProdPartAndCloseDialogFun('', 'MaterielNo', 'MaterielName', '0', 'ProdPartSelectDiv')")
+    @UserHelpers.ButtonForClose("CloseDialogFun('ProdPartSelectDiv')")
+</div>
+<!-- *************************************************************** 子查询画面END ******************************************************** -->

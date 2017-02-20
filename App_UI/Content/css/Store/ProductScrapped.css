@@ -1,0 +1,31 @@
+﻿body {
+}
+
+ .datagrid > div {
+        margin:auto;
+    }
+
+    /*#tbAddScrappedProduct{
+        border:1px solid #808080;
+        border-collapse : collapse ;
+        width:580px;height:auto;   
+    }
+    #tnAddScrappedProduct tr, td
+    {
+        border:1px solid #808080;  
+    }
+    ._tb_title
+    {
+        text-align :center ;
+        background-color :#F1F1F2;
+        color:#0F5C80 ;  
+        width:25%; 
+    }
+    ._tb_content
+    {
+        padding :1px 1px 1px 1px;
+    }*/
+    ._text_input
+    {
+        width: 100px;
+    }

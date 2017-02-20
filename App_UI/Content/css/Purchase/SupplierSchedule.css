@@ -1,0 +1,22 @@
+﻿
+.datagrid
+{
+    width: 100%;
+    text-align: center;
+}
+
+.datagrid > div
+{
+    margin: auto;
+}
+
+.easyui-datebox
+{
+    width: 110px;
+}
+
+._text_input
+{
+    width: 113px;
+    height: 18px;
+}

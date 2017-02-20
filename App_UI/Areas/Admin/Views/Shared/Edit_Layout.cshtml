@@ -1,0 +1,16 @@
+﻿<div class="ui-widget-header">
+    @Html.Partial("Button_Back_List")
+   
+</div>
+@using (Ajax.BeginForm(new AjaxOptions { UpdateTargetId = "Main" }))
+{
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary()
+   // @Html.DropDownList("TLimit", ViewData["TLimitList"] as IEnumerable<SelectListItem>)
+   
+    @RenderBody()
+
+    
+    
+    @Html.Partial("Button_Submit")
+}

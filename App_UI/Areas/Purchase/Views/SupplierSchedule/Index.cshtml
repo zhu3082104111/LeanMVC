@@ -1,0 +1,222 @@
+﻿@{
+    ViewBag.Title = "Index";
+}
+
+<link rel="Stylesheet" href="~/Content/css/Purchase/SupplierSchedule.css" type="text/css"/>
+<script>
+
+    var table = $("#IPPTable");
+    var form = $("#processForm");
+    
+    //var states = ["未完成", "已完成"];
+
+    /***********operations start***************/
+
+    var searchFun = function () {
+        $(form).form("submit", {//form提交
+            url: "/Admin/UserInfo/Get",
+            onSubmit: function (param) {//除表单外的数据(分页)
+                var pager = $(table).datagrid("getPager");
+                var pagerOptions = $(pager).pagination("options");
+                param.rows = pagerOptions.pageSize;
+                param.page = 1;
+            },
+            success: function (data) {
+                $(table).datagrid("loadData", eval('(' + data + ')'));//重新加载数据
+            }
+        });
+    };
+
+    //转到详细计划页面
+    var showDetailFun = function () {
+        var $tabs = $("#tabs");
+        var $tab = $("#tabs").tabs("getSelected");
+        $tabs.tabs("update",{
+            tab: $tab,
+            options: {
+                href: "/Produce/InProcessingPlan/Details",
+            }
+        });
+    };
+
+    //转到添加界面
+    var AddFun = function () {
+        var $tabs = $("#tabs");
+        var $tab = $("#tabs").tabs("getSelected");
+        $tabs.tabs("add", {
+            tab: $tab,
+            options: {
+                href: "/Purchase/SupplierSchedule/Addition",
+            }
+        })
+    }
+
+    //转到修改界面
+    var ModifyFun = function()
+    {
+        var $tabs = $("#tabs");
+        var $tab = $("#tabs").tabs("getSelected");
+        $tabs.tabs("update",{
+            tab: $tab,
+            options: {
+                href: "/Purchase/SupplierSchedule/Modify",
+            }
+        })
+    }
+
+    var printFun = function () {
+
+    };
+
+    var closeFun = function () {
+
+    };
+
+    /***********operations end***************/
+
+    //获得列属性
+    var getColumns = function () {
+        //列属性: field(字段名,非空) , title(列名) , width(默认80) , sortable(默认false) , editor(默认null) , formatter(默认-函数)
+        var _columns = [[
+            ["UName", "外协单号", 120, true],
+            ["RealName", "物料名称", 120, true],
+            ["DeptName", "供应商名称", 180, true],
+            ["Tel", "物料型号", 120, true],
+            //["Addate", "到货日期", 120, true, "", function (value, row, index) {//列内容格式化
+            //    return value;
+            //}],
+            ["Addate", "到货日期", 120, true, { type: "text" }, function (value, row, index) {
+                var date;
+                var strDt = (value + "").replace(/\/Date\(/, "").replace(/\)\//, "");
+                if (isNaN(strDt)) {
+                    date = strDt.ToDate();
+                } else {
+                    date = new Date(strDt.ToInt());
+                }
+                var str = date.Format("yyyy-MM-dd");
+                row.Addate = str;
+                return str;
+            }],
+            //["EndDate", "结束时间", 120, false],
+            ["Tel", "生产数量", 120, true],
+            ["Email", "达成率", null, true]
+        ]];
+
+        return _columns;
+    };
+    
+    //获得数据
+    var getData = function () {
+        //var _data = [
+        //    {
+        //        //Category: "0000B1", ProductName: "磨件B1", StartDate: "2013-8-1", EndDate: "2013-9-3", Quantity: 500, State: 1
+        //        Category: "1", ProductName: "10", SupplierName:"100",ProductCode:"A",ReceiveDate:"2013-12-2",RecQuantity:300,YieldRate:"70%"
+        //    }, {
+        //        //Category: "0000B2", ProductName: "磨件B2", StartDate: "2013-8-20", EndDate: "2013-9-30", Quantity: 1000, State: 0
+        //        Category: "2", ProductName: "20", SupplierName: "200", ProductCode: "B", ReceiveDate: "2013-12-3", RecQuantity: 300, YieldRate: "90%"
+        //    }, {
+        //        //Category: "0000B3", ProductName: "车件", StartDate: "2013-9-5", EndDate: "2013-9-29", Quantity: 1000, State: 0
+        //        Category: "3", ProductName: "30", SupplierName: "300", ProductCode: "C", ReceiveDate: "2013-12-7", RecQuantity: 300, YieldRate: "30%"
+        //    }, {
+        //        //Category: "0000B4", ProductName: "锻件1", StartDate: "2013-8-7", EndDate: "2013-10-5", Quantity: 1000, State: 1
+        //        Category: "4", ProductName: "40", SupplierName: "400", ProductCode: "D", ReceiveDate: "2013-12-12", RecQuantity: 300, YieldRate: "50%"
+        //    }, {
+        //        //Category: "0000B5", ProductName: "锻件2", StartDate: "2013-10-2", EndDate: "2013-11-15", Quantity: 1200, State: 0
+        //        Category: "5", ProductName: "50", SupplierName: "500", ProductCode: "E", ReceiveDate: "2013-12-23", RecQuantity: 300, YieldRate: "10%"
+        //    }
+        //];
+        //测试数据
+        var _data = [
+     {  
+         UName: "1", RealName: "10", DeptName: "100", Tel: "A", Addate: "2013-12-2", Tel: 300, Email: "70%"
+     }, {
+         UName: "2", RealName: "20", DeptName: "200", Tel: "B", Addate: "2013-12-3", Tel: 300, Email: "90%"
+     }, {
+         UName: "3", RealName: "30", DeptName: "300", Tel: "C", Addate: "2013-12-7", Tel: 300, Email: "30%"
+     }, {
+         UName: "4", RealName: "40", DeptName: "400", Tel: "D", Addate: "2013-12-12", Tel: 300, Email: "50%"
+     }, {
+         UName: "5", RealName: "50", DeptName: "500", Tel: "E", Addate: "2013-12-23", Tel: 300, Email: "10%"
+     }
+        ];
+        return _data;
+    };
+
+    $(function () {
+        Common.Functions.createDataGrid({//创建datagrid,详细内容参见functions.js
+            target: $("#IPPTable"),//table容器,必须
+            //url: "/Admin/UserInfo/Get",//获取数据的地址,必须
+            //url: "/Purchase/SupplierSchedule/Get",
+            columns: getColumns(),//列属性,必须
+            //idField: "UId",//标识字段            
+            checkbox: true,//是否显示checkbox
+            maxWidth: 900,//最大宽度
+            maxHeight: 300,//最大高度
+            pageSize: 5, pageList: [5, 10, 20, 30], singleSelect: false,
+            onBeforeLoad: function (queryParams) {//可以添加一些额外参数,主要用于查询条件
+                var arr = $(form).serializeArray();
+                $.each(arr, function () {
+                    queryParams[this.name] = this.value;
+                });
+            },
+            onLoadError: function () {
+                alert("请求服务器失败，请刷新页面重试!");
+            },
+            onCreating: function (data) {//数据成功加载
+                //do something...
+            },
+            loadFilter: function (data) {
+                var _data = {};
+                _data.rows = isUndefined(data.rows)?data:data.rows;
+                _data.total = isUndefined(data.total)? data : data.total;
+                return _data;
+            }
+        });
+        parent.$(table).datagrid("loadData",getData());
+    });
+   
+
+</script>
+
+<!--上面的页面导航-->
+<div class="buttons" style="width:100%;text-align:right;">
+    @*<a class="easyui-linkbutton" iconCls1='icon-add' plain="false" onclick='AddFun();'>添加</a>*@
+    <a class="easyui-linkbutton" iconCls1='icon-add' plain="false" onclick='ModifyFun();'>修改</a>
+    <a class="easyui-linkbutton" iconCls1='icon-add' onclick='printFun();'>删除</a>
+    <a href='javascript:void(0);' class='easyui-linkbutton' iconCls1='icon-add' onclick='closeFun();'>关闭</a>
+    <span style="width:100px;margin-right:10%">&nbsp;</span>
+</div>
+<!--分割线-->
+<div class ="_line" style="width:100%;margin:20px 0;">
+    <hr style="width:100%;color:#95B8E7"/>
+</div>
+<!--界面-->
+<div style="width:100%;text-align:center;margin-bottom:45px;">
+    <!--标题-->
+    <div>
+        <span>杭州雷迪克汽车部件制造有限公司</span>
+    </div>    
+    <h2>外协产品进度</h2>
+</div>
+<div style="width:100%;text-align:center;margin-bottom:25px;">
+    <div style="width:75%;margin:auto;text-align:left;">
+        <form id="processForm" method ="post" >
+            <div style ="margin-bottom :5px">
+                <span>计划单号：<input id ="uname" class="_text_input" name="RealName"/></span>
+                <span  style="margin-left:20px;" >产品型号：<input class="_text_input" name="" /></span>
+                <span  style="margin-left:20px;" >供应商编号：<input class="_text_input" name="" style ="width :180px" /></span>
+                
+            </div>
+            <div>
+                <span>物料型号：<input class="_text_input" name=""/></span>
+                <span  style="margin-left:20px;" >外协单号：<input class="_text_input" name="" /></span>
+                <span  style="margin-left:20px;" >日期：<input class="easyui-datebox" name="StartDate"  />~<input class="easyui-datebox" name="EndDate" /></span>
+                <a class="easyui-linkbutton" style="margin-left:20px;" href ="javascript:void(0);" onclick="searchFun();">查询</a>                               
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="datagrid">
+    <table id="IPPTable"></table>
+</div>

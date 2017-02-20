@@ -1,0 +1,482 @@
+﻿@{
+    ViewBag.Title = "FinOutRecordDetlsEdit";
+}
+
+@using App_UI.Resource.ViewText.Store
+<style>
+    #tablesearch
+    {
+        margin: auto;
+        text-align: left;
+    }
+
+    /*#tablesearch td
+    {
+        width:300px;
+    }*/
+</style>
+<style type="text/css">
+    .Onblue_style
+    {
+        font-size:17px;
+        height:15px;
+        font-family:Tahoma,Verdana,微软雅黑,新宋体;
+
+    }
+   
+</style>
+<!--上面的页面导航-->
+<div class="buttons" style="width: 100%; text-align: right;">
+
+   
+        @UserHelpers.ButtonForPrintPreview("printFun(inerFinOutID)", "printPreview", "disabled")
+        @UserHelpers.ButtonForLoading("loginFun()", "login")
+        @UserHelpers.ButtonForUpdate("editFun()", "edit","disabled")
+   
+    @UserHelpers.ButtonForClose("parent.closeTab(gTitle)")
+    <span style="width: 100px; margin-right: 10%">&nbsp;</span>
+</div>
+<!--分割线-->
+@UserHelpers.Line()
+<!--界面-->
+<div style="width: 100%; text-align: center; margin-bottom: 15px;">
+    @UserHelpers.Title(@VT_FinOutRecord.FinOutRecordDetlTitle)
+</div>
+
+<div style="width: 100%; text-align: center; margin-bottom: 12px;">
+    <div style="width: 100%; margin: auto; text-align: left;">
+        <form id="searchForm" method='post'>
+            <table id="tablesearch">
+                <tr>
+                    <td>@VT_FinOutRecord.LadiID：</td>
+                    <td>
+                        <input id="LadiID" class="_text_input" name="LadiID" value="@ViewBag.ladiID"/></td>
+                    <td style="padding-left: 20px">@VT_FinOutRecord.FinInerFinOutID：</td>
+                    <td>
+                        <label id="InerFinOutID">@ViewBag.inerFinOutID</label></td>
+                    <td style="padding-left: 20px">@VT_FinOutRecord.OutWorks：</td>
+                    <td>
+                        <label id="OutWorks">@ViewBag.whkpID</label></td>
+                    <td style="padding-left: 20px">@VT_FinOutRecord.OutDate：</td>
+                    <td>
+                        <input class="easyui-datebox" name="OutDate" id="OutDate" style="width:100px" value="@ViewBag.outDate"/></td>
+                    @if (ViewBag.state == "1")
+                    {
+                        <td style="width: 60px"></td>
+                    }
+                </tr>
+                <tr>
+                    <td>@VT_FinOutRecord.Remarks：</td>
+                    <td colspan="7">
+                        <input id="MRemarks" class="_text_input" name="MRemarks" style="width:736px" value="@ViewBag.remarks"/>
+                    </td>
+                    @if (ViewBag.state == "1")
+                    {
+                        <td style="text-align: right">
+                            @UserHelpers.ButtonForLineAddition("addRow()","addRow1")
+                        </td>
+                    }
+
+                </tr>
+            </table>
+        </form>
+    </div>
+</div>
+
+<div class="datagrid">
+    <table id="finOutRecordDetlsTable"></table>
+</div>
+
+<!-- 物料选择对话框 -->
+<div class="easyui-dialog" id="ProdPartSelectDiv" closed="true" data-options="buttons:'#prodPartSelect',modal:true"></div>
+<div id="prodPartSelect">
+    @UserHelpers.ButtonForChoose("SelProdPartAndCloseDialogFun('PartId', 'OrdPdtID', 'ProductName','PrchsUp', editRow, 'ProdPartSelectDiv')")
+    @UserHelpers.ButtonForClose("CloseDialogFun('ProdPartSelectDiv')")
+</div>
+
+@section head{
+    <link rel="stylesheet" href="~/Content/css/Store/EndProOutRecord.css" />
+
+    <script>
+        
+        var table;  //显示数据的表的标志
+        var form;  //搜索标志
+        var merged = false;  //防止mergeCells和onCreating反复调用造成死循环
+        var loginFlag = 0;  //标识登录状态
+        var inerFinOutID = "@ViewBag.inerFinOutID";  //保存送货单号
+        var editFlag = 0;  //标识编辑状态
+        var Index = 0;  //在输入ID自动生成方法里记录行索引
+        var quantity = 0;  //记录数量
+
+    /***********operations start***************/
+    //登录保存方法
+    var loginFun = function (rowIndex, rowData, changes) {
+        var row = $(table).datagrid('getRows');
+        var a = "@ViewBag.state";
+        if (row.length > 0) {
+            //定义一个数组用于存放table中的数据
+            var outRecordList = [];
+            //定义一个数组用于存放datagrid中的input
+            //var selectors = ["input", "input[name=PartId]", "null", "input", "input", "null", "input[name=PackPrePieceQuantity]", "input[name=PackPieceQuantity]", "input[name=FracQuantity]", "null", "null", "input"];
+            var a = $(".PdtID");
+            var b = $(".PackPrePieceQuantity");
+            var c = $(".PackPieceQuantity");
+            var d = $(".FracQuantity");
+            for (var i = 0; i < row.length; i++) {
+                //var tds = $("div.datagrid-view2").find("div.datagrid-body").find("tr.datagrid-row:eq(" + i + ")").children();
+                //$("#finOutRecordDetlsTable").datagrid("endEdit", i);
+                //得到每行数据
+                //var orderk = {};
+                //for (var k = 0; k < tds.length; k++) {
+                //    orderk[k] = $(tds[k]).find(selectors[k]).val();
+                //}
+                alert(row[i].ClientOrderID);
+                var outRecord = {};
+                outRecord["RowIndex"] = i;
+                outRecord["ClientOrderID"] = row[i].ClientOrderID;
+                outRecord["OrdPdtID"] = $(a[i]).val();
+                outRecord["ProductName"] = row[i].ProductName;
+                outRecord["BatchID"] = row[i].BatchID;
+                outRecord["Quantity"] = row[i].Quantity;
+                outRecord["PrchsUp"] = row[i].PrchsUp;
+                outRecord["NotaxAmt"] = row[i].NotaxAmt;
+                outRecord["Remarks"] = row[i].Remarks;
+                outRecord["PackPrePieceQuantity"] = $(b[i]).val();
+                outRecord["PackPieceQuantity"] = $(c[i]).val();
+                outRecord["FracQuantity"] = $(d[i]).val();
+                outRecord["ProductSpec"] = row[i].ProductSpec;
+
+                //将outRecord加进outRecordList
+                outRecordList.push(outRecord);
+            }
+
+            $.ajax({
+                async: true,
+                url: "/Store/FinOutRecord/Login?pageFlg=@ViewBag.state",
+                data: {
+                    LadiID: $("#LadiID").val(),
+                    InerFinOutID: $("#InerFinOutID").html(),
+                    OutWorks: $("#OutWorks").html(),
+                    MRemarks: $("#MRemarks").val(),
+
+                    outRecordList: outRecordList
+                },
+                type: "post",
+                success: function (data) {
+                    var _data = eval('(' + data + ')');
+                    if (_data.Result == true) {
+                        $.messager.alert("信息", _data.Message);
+                        //$("#LadiID").attr("disabled", true);
+                        //$("#login").attr("disabled", true);
+                        //$("#printPreview").attr("disabled", false);
+                        //$("#edit").attr("disabled", false);
+
+                        //$("#OrdPdtID").attr("disabled", true);
+                        //$("#Quantity").attr("disabled", true);
+                        //$("#MRemarks").attr("disabled", true);
+                        var outWorks = $("#OutWorks").html();
+                        var outDate = $("#OutDate").datebox('getValue');
+                        var inerFinOutID = $("#InerFinOutID").html();
+                        var ladiID = $("#LadiID").val();
+                        var remarks = $("#MRemarks").val();
+                        var date;
+                        var strDt = (outDate + "").replace(/\/Date\(/, "").replace(/\)\//, "");
+                        if (isNaN(strDt)) {
+                            date = strDt.ToDate();
+                        } else {
+                            date = new Date(strDt.ToInt());
+                        }
+                        var str = date.Format("yyyy-MM-dd");
+                        parent.addTab("内部成品库出库履历详细", "/Store/FinOutRecord/FinOutRecordDetls?inerFinOutID=" + inerFinOutID + "&ladiID=" + ladiID + "&whkpID=" + outWorks + "&outDate=" + outDate + "&remarks=" + remarks);
+                        //$(table).datagrid("reload");
+
+                    } else {
+                        //title：显示在标题面板的标题文本;msg：提示框显示的消息文本;icon：提示框显示的图标,可用的值是：error,question,info,warning;fn：当窗口关闭时触发的回调函数
+                        $.messager.alert("信息", _data.Message, "info", function () {
+                            //开启编辑
+                            //vareditorInfons();
+                        });
+                        //do something another...
+                    }
+                }
+            });
+            console.info(rowData);
+            loginFlag = 1;
+            editFlag = 0;
+
+        }
+    }
+
+    //编辑操作
+    var editFun = function () {
+
+    };
+
+    //打印跳转  跳转到送货单页面
+    var printFun = function (id) {
+
+    };
+
+    // 【物料选择按钮】按下
+    var ShowProdPartInfoScreen = function (obj) {
+        var rowObj = obj.parentNode.parentNode.parentNode
+        editRow = $(rowObj).index();
+        ShowProdPartInfo("ProdPartSelectDiv", "", "");
+    }
+
+    //-------------------------------------------------------------------------
+    // 显示物料选择画面
+    //
+    // divID：   嵌套供物料选择画面的dialgo的div的ID 
+    // abbrev：物料编号
+    // name：  物料名称
+    //-------------------------------------------------------------------------
+    var ShowProdPartInfo = function (divID, abbrev, name) {
+        var url = "/Store/FinOutRecord/ShowProdAndPartInfo?abbrev=" + abbrev + "&name=" + name;
+        $("#" + divID).dialog({
+            title: "<span style='font-family:Tahoma,Verdana,微软雅黑,新宋体;font-size:14px;margin:0px;padding:0px;'>物料选择画面</span>",
+            cache: false,
+            resizable: false,
+            //fit: true,
+            height: 400,
+            href: url,
+            modal: true,
+            width: 600,
+            //事件
+            onClose: function () {
+            }
+        });
+        $("#" + divID).dialog("open");
+    };
+
+    //-------------------------------------------------------------------------
+    // 选择物料，返回选中的物料，并关闭物料子查询画面
+    // 
+    // retID:       返回的物料ID（父画面的物料ID<input name="retID">）
+    // retAbbrev:   返回的物料编号（父画面的物料编号<input name="retAbbrev">）
+    // retName：    返回的物料名称（父画面的物料名称<input name="retName">）
+    // index:       索引（多行时，行号）
+    // divID：      要关闭的div的ID 
+    //-------------------------------------------------------------------------
+    var SelProdPartAndCloseDialogFun = function (retID, retAbbrev, retName,retPricee, idx, divID) {
+        var cnt = $("#PPInfoTable").datagrid("getSelections").length;
+        if (cnt != 1) {
+            alert("请您选择所需要的供货商");
+        } else {
+            var selectedID = $("#PPInfoTable").datagrid("getSelections")[0]["Id"];
+            var selectedAbbrev = $("#PPInfoTable").datagrid("getSelections")[0]["Abbrev"];
+            var selectedName = $("#PPInfoTable").datagrid("getSelections")[0]["Name"];
+            var selectedPricee = $("#PPInfoTable").datagrid("getSelections")[0]["Pricee"];
+            // 设定选择的返回值
+            var idArray = $("input[name='" + retID + "']");
+            $(idArray[idx]).val(selectedID);
+            var idArray = $("input[name='" + retAbbrev + "']");
+            $(idArray[idx]).val(selectedAbbrev);
+            var nameArray = $("input[name='" + retName + "']");
+            $(nameArray[idx]).val(selectedName);
+            var priceeArray = $("input[name='" + retPricee + "']");
+            $(priceeArray[idx]).val(selectedPricee);
+
+            //物料名称
+            $("#finOutRecordDetlsTable").datagrid('getRows')[idx]['ProductName'] = selectedName;
+            $("#finOutRecordDetlsTable").datagrid("refreshColumn", "ProductName");
+            //单价
+            $("#finOutRecordDetlsTable").datagrid('getRows')[idx]['PrchsUp'] = selectedPricee;
+            $("#finOutRecordDetlsTable").datagrid("refreshColumn", "PrchsUp");
+
+            //关闭弹出框
+            $("#" + divID).dialog("close");
+        }
+    };
+
+    //获取可编辑行  打开编辑
+    vareditorInfons = function () {
+        var row = $(table).datagrid('getRows');
+        var a = "@ViewBag.state";
+
+        if (a == "1") {
+            if (row.length > 0) {
+                for (var i = 0 ; i < row.length; i++) {
+                    $(table).datagrid("beginEdit", i);
+                }
+                //$("#LadiID").removeAttr("disabled");
+            }
+        }
+    }
+
+    //控件是否可用转换
+    var disableChange = function () {
+        $(".datebox :text").attr("readonly", "readonly");
+        var a = "@ViewBag.state";
+        //新增
+        if (a == "1") {
+            $("#LadiID").attr("disabled", false);
+            $("#MRemarks").attr("disabled", false);
+
+        }
+            //编辑
+        else {
+
+            $("#LadiID").attr("disabled", true);
+            $("#MRemarks").attr("disabled", false);
+
+            var c = $('#OutDate').data('combo').combo.find('span .combo-arrow');//sad 
+            $(c).attr("disabled", true);
+
+        }
+    }
+
+    //添加行
+    var addRow = function () {
+
+        loginFlag = 1;
+        var row = $(table).datagrid('getRows');
+        $(table).datagrid("insertRow", {
+            index: row.length, // index start with 0
+            row: {
+                "PackPrePieceQuantity": 0,//"OutWorks"为登录人
+                "PackPieceQuantity": 0,
+                "FracQuantity": 0
+            }
+        });
+        var index = row.length - 1;
+        //将新插入的那一行开启编辑状态
+        $(table).datagrid("beginEdit", index);
+
+    }
+
+    //取得总价
+    var TotalAmtfun = function (pp) {
+        var selectors = ["input[name=Quantity]", "input[name=NotaxAmt]", "input[name=PackPrePieceQuantity]", "input[name=PackPieceQuantity]", "input[name=FracQuantity]"];
+        var tds = $("div.datagrid-view2").find("div.datagrid-body").find("tr.datagrid-row:eq(" + Index + ")").children();
+        var s1 = $(tds[6]).find(selectors[2]).val();//取得每件数量
+        var s2 = $(tds[7]).find(selectors[3]).val();//取得件数
+        var s3 = $(tds[8]).find(selectors[4]).val();//取得零头
+        alert(Index);
+        //数量乘以单价
+        $("#finOutRecordDetlsTable").datagrid('getRows')[pp]['Quantity'] = parseInt(s1 * s2) + parseInt(s3);
+        $("#finOutRecordDetlsTable").datagrid('getRows')[pp]['NotaxAmt'] = $("#finOutRecordDetlsTable").datagrid('getRows')[pp]['Quantity'] * ($("#finOutRecordDetlsTable").datagrid('getRows')[pp]['PrchsUp']);
+        $("#finOutRecordDetlsTable").datagrid("refreshColumn", "Quantity");
+        $("#finOutRecordDetlsTable").datagrid("refreshColumn", "NotaxAmt");
+    }
+
+    //获得列属性
+    var getColumns = function () {
+        //列属性: field(字段名,非空) , title(列名) , width(默认80) , sortable(默认false) , editor(默认null) , formatter(默认-函数)
+            var columns = [
+          [//第一行
+                 ["ClientOrderID", "订单号", 90, 2, null, true, "text"],
+                 ["OrdPdtID", "物料编号", 130, 2, null, true, null, function (value, row, index) {
+                     return "<input type='text' name='OrdPdtID' id='OrdPdtID' disabled='true' size='13'/>" +
+                         "<img src='/Scripts/js/themes/icons/search_icon.png' onclick='ShowProdPartInfoScreen(this);'/>" +
+                         "<input type='hidden' id='PartId' name='PartId' class='PdtID'/>";
+                 }],
+                 ["ProductName", "物料名称", 160, 2, null, true],
+                 ["BatchID", "批次号", null, 2, null, true, "text"],
+                 ["ProductSpec", "规格型号", null, 2, null, true, "text"],
+                 ["Quantity", "数量", 40, 2, null, true],
+                 [null/*此处不要写字段名，null或空字符即可，否则会出错*/, "包装情况", null, null, 3, null],
+                 ["PrchsUp", "单价", 40, 2, null, true, null],
+                 ["NotaxAmt", "金额", 40, 2, null, true, null],
+                 ["Remarks", "备注", 120, 2, null, true, "text"]
+          ], [//第二行
+                 ["PackPrePieceQuantity", "每件数量", null, null, null, true, null, function (value, row, index) {
+                     return ('<input  Onblur="TotalAmtfun(' + index + ')"  name="PackPrePieceQuantity" id="PackPrePieceQuantity"  class="PackPrePieceQuantity"  onkeyup="value=value.replace(\/[^\\d]\/g,\'\')  "  onbeforepaste="clipboardData.setData(\'text\',clipboardData.getData(\'text\').replace(\/[^\\d]\/g,\'\'))"  value=' + value + '>')
+                 }],
+                 ["PackPieceQuantity", "件数", null, null, null, true, null, function (value, row, index) {
+                     return ('<input  Onblur="TotalAmtfun(' + index + ')"  name="PackPieceQuantity" id="PackPieceQuantity"  class="PackPieceQuantity"  onkeyup="value=value.replace(\/[^\\d]\/g,\'\')  "  onbeforepaste="clipboardData.setData(\'text\',clipboardData.getData(\'text\').replace(\/[^\\d]\/g,\'\'))"  value=' + value + '>')
+                 }],
+                 ["FracQuantity", "零头", null, null, null, true, null, function (value, row, index) {
+                     return ('<input  Onblur="TotalAmtfun(' + index + ')"  name="FracQuantity" id="FracQuantity"  class="FracQuantity"  onkeyup="value=value.replace(\/[^\\d]\/g,\'\')  "  onbeforepaste="clipboardData.setData(\'text\',clipboardData.getData(\'text\').replace(\/[^\\d]\/g,\'\'))"  value=' + value + '>')
+                 }]
+          ]
+
+            ];
+      
+        return columns;
+    };
+
+    /***********operations end***************/
+
+    $(function () {
+        table = $("#finOutRecordDetlsTable");
+        form = $("#searchForm");
+        var pageFlag = "@ViewBag.state";
+        disableChange();
+        Common.Functions.createDataGrid({//创建datagrid,详细内容参见functions.js
+            target: "#finOutRecordDetlsTable",//table容器,必须
+            url: "/Store/FinOutRecord/ShowOutRecordDetail?inerFinOutID=@ViewBag.inerFinOutID",//获取数据的地址,必须
+            columns: getColumns(),//列属性,必须
+            maxWidth: 1200,//最大宽度
+            maxHeight: 300,//最大高度
+            onDblClickRow: function (rowIndex, rowData) {
+                return false;
+            },
+            onClickRow: function (rowIndex, rowData) {
+                Index = rowIndex;
+                return false;
+            },
+            onLoadError: function () {
+                alert("请求服务器失败，请刷新页面重试!");
+            },
+            onCreating: function (data) {//数据成功加载
+                //do something...
+                if (pageFlag == "1" && loginFlag != 1) {
+                    addRow();
+                }
+
+                vareditorInfons();
+             
+            }
+        });
+
+        //$(document).on("blur", "td[field='OrdPdtID'] input", function (event) {
+        //    var i = $("td[field='OrdPdtID'] input").val();
+
+        //    $.ajax({
+
+        //        url: "/Store/FinOutRecord/GetProductInfo?partAbbrevi=" + i,
+        //        data: {
+        //            partAbbrevi: i
+        //        },
+        //        type: "post",
+        //        success: function (Data) {
+
+        //            $(table).datagrid('getRows')[Index]['ProductName'] = Data.ProductName;
+        //            $(table).datagrid('getRows')[Index]['PrchsUp'] = Data.PrchsUp;
+        //            $(table).datagrid('getRows')[Index]['NotaxAmt'] = quantity * $(table).datagrid('getRows')[Index]['PrchsUp'];
+
+        //            $(table).datagrid("refreshColumn", "NotaxAmt");
+
+        //            $(table).datagrid("refreshColumn", "ProductName");
+        //            $(table).datagrid("refreshColumn", "PrchsUp");
+        //        },
+        //        error: function () {
+
+        //            $(table).datagrid('getRows')[Index]['ProductName'] = "";
+        //            $(table).datagrid('getRows')[Index]['PrchsUp'] = "";
+        //            $(table).datagrid('getRows')[Index]['NotaxAmt'] = 0;
+        //            $(table).datagrid("refreshColumn", "ProductName");
+        //            $(table).datagrid("refreshColumn", "PrchsUp");
+        //            $(table).datagrid("refreshColumn", "NotaxAmt");
+        //        }
+
+        //    });
+
+        //})
+
+        //$(document).on("blur", "td[field='Quantity'] input", function (event) {
+        //    var i = $("td[field='Quantity'] input").val();
+        //    quantity = i;
+        //    $(table).datagrid('getRows')[Index]['NotaxAmt'] = i * $(table).datagrid('getRows')[Index]['PrchsUp'];
+
+        //    $(table).datagrid("refreshColumn", "NotaxAmt");
+        //})
+
+
+    });
+    </script>
+
+}
+
+

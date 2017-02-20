@@ -1,0 +1,568 @@
+﻿@section head{
+    <script src="~/Scripts/common/dialog.js" type="text/javascript"></script>
+
+
+    <!---- style ---->
+    <style type="text/css">
+        #ShowAccOutPrintLayoutDIV{
+            margin:0px;
+            padding:0px;
+            text-align:center;
+
+            /*border:1px solid blue;*/
+        }
+
+        #ShowAccOutPrintLayoutDIV span{
+            margin:0px;
+            padding:0px;
+
+            /*border:1px solid blue;*/
+	    }
+
+
+        /* Button Layout */
+        #ShowAccOutPrintLayoutDIV .FunctionButton_Area .CloseButton_Menument{
+            margin: 0px 5px;
+        }
+
+
+        /* Title Layout */
+        #ShowAccOutPrintLayoutDIV .PageTitle_div{
+            margin:0px;
+            padding:0px;
+
+            /*border:1px solid blue;*/
+        }
+
+
+        /* Form Layout */
+        #ShowAccOutPrintLayoutDIV .Search_Form{
+            margin:2% 0px 0px 0px;
+            padding:0px;
+
+            /*border:1px solid blue;*/
+        }
+
+        #ShowAccOutPrintLayoutDIV .Search_Form div{
+            margin:0px auto;
+            padding:0px;
+            text-align:left;
+            width:900px;
+
+            /*border:1px solid blue;*/
+        }
+
+        #ShowAccOutPrintLayoutDIV .Search_Form #SearchAccOutStore{
+            margin:0px 0px 0px 66%;
+            padding:0px;
+        }
+
+
+        /* Table Layout */
+        #ShowAccOutPrintLayoutDIV .ShowTableDIV{
+            margin:0.5% 0px 0px 0px;
+            padding:0px;
+            text-align:left;
+
+            /*border:1px solid blue;*/
+        }
+
+    </style>
+
+
+    <!-- javascript -->
+    <script>
+        (function ($) {
+
+            /********* 功能函数 *********/
+            //关闭
+            window.AOPCloseFun = function () {
+
+            } //end AOPCloseFun
+
+            //单选框
+            window.AOPRadioPrintFun = function (rowIndex) {
+                $(":checkbox").prop("checked", false); //设置控件 checkbox 为非勾选状态
+
+                var pickListID = $("#AccOutPrintTable").datagrid("getRows")[rowIndex]["PickListID"]; //获取字段 PickListID 值
+                var checkboxName = "AOPCheckbox" + pickListID; //设置控件名称
+
+                $("[name=\"" + checkboxName + "\"]:checkbox").prop("checked", true); //设置控件 checkbox 为勾选状态
+            } //end AOPRadioPrintFun
+
+            //预览
+            window.AOPPreviewFun = function () {
+                if ($("[name=\"AOPRadio\"]:radio:checked").length <= 0) { //判断控件 radio 是否有被选中
+                    $.messager.alert("友情提示", "请选择记录！");
+                    return;
+                }
+
+                var radioValue = $("[name=\"AOPRadio\"]:radio:checked").val(); //获取控件 radio 属性 value 值
+                var pickListID = $("#AccOutPrintTable").datagrid("getRows")[radioValue]["PickListID"]; //获取字段 PickListID 值
+                var tecnProductOutID = $("#AccOutPrintTable").datagrid("getRows")[radioValue]["TecnProductOutID"]; //获取字段 TecnProductOutID 值
+                var checkboxName = "AOPCheckbox" + pickListID; //设置控件名称
+                var checkBoxArr = $("[name=\"" + checkboxName + "\"]:checkbox:checked"); //获取控件 checkbox 且为勾选状态结果集
+                var batchIDArr = ""; //设置，初始化批次号结果集
+                var pickListDetailNOArr = ""; //设置，初始化领料单详细号结果集
+
+                for (var i = 0; i < checkBoxArr.length; i++) { //遍历控件 checkbox 结果集
+                    var checkboxValue = checkBoxArr[i].value; //获取控件 checkbox 属性 value 值
+                    batchIDArr = batchIDArr + "," + $("#AccOutPrintTable").datagrid("getRows")[checkboxValue]["BatchID"]; //获取批次号
+                    pickListDetailNOArr = pickListDetailNOArr + "," + $("#AccOutPrintTable").datagrid("getRows")[checkboxValue]["PickListDetailNO"]; //获取领料单详细号
+                } //end for
+
+                batchIDArr = batchIDArr.substring(1, batchIDArr.length); //删除开头","
+                pickListDetailNOArr = pickListDetailNOArr.substring(1, pickListDetailNOArr.length); //删除开头","
+                var url = "/Store/AccOutPrint/AccOutPrintIndex?pickListID=" + pickListID + "&tecnProductOutID=" + tecnProductOutID + "&batchIDArr=" + batchIDArr + "&pickListDetailNOArr=" + pickListDetailNOArr;
+                parent.addTab("加工产品出库单(附件库)", url);
+            } //end AOPPreviewFun
+
+            //查询
+            window.AOPSearchFun = function () {
+                $("#SearchAccOutPrintForm").form("submit", { //ajax form提交
+                    url: "/Store/AccOutPrint/Get",
+                    //事件
+                    onSubmit: function (param) {//除表单外的数据(分页)
+                        var pager = $("#AccOutPrintTable").datagrid("getPager");
+                        var pagerOptions = $(pager).pagination("options");
+                        param.rows = pagerOptions.pageSize;
+                        param.page = 1; //pagerOptions.pageNumber;
+                    },
+                    success: function (data) {
+                        $("#AccOutPrintTable").datagrid("loadData", eval("(" + data + ")")); //重新加载数据
+                    }
+                });
+            } //end AOPSearchFun
+
+            //弹出框
+            window.AOPShowProdPartInfoScreenByName = function () {
+                ShowProdPartInfo("AOPProdPartSelectDIV", "", $("#ProductName").val());
+            } //end AOPShowProdPartInfoScreenByName
+
+
+            /********* 表格函数 *********/
+            var AOPGetBindStringFun = function () {
+                var getBindString = Common.Functions.createDataGrid({ //创建datagrid,详细内容参见functions.js
+                    checkOnSelect: true,
+                    columns: AOPGetColumnsFun(),
+                    frozenColumns: AOPGetFrozenColumnsFun(),
+                    loadFilter: function (data) {
+                        var accOutPrintLoadFilter = {};
+                        accOutPrintLoadFilter.rows = data.rows ? data.rows : data;
+                        accOutPrintLoadFilter.total = data.total ? data.total : 0;
+
+                        AdaptDt(this, accOutPrintLoadFilter.rows, "OutDate"); //设置字段 OutDate 显示日期格式
+
+                        setTimeout(function () {
+                            if ($("td").hasClass("datagrid-td-merged")) return; mergeCells({ fields: ["RadioPrint", "PickListID", "TecnProductOutID", "DeptName"], target: $("#AccOutPrintTable") });
+                        }, 10); //合并单元格
+
+                        return accOutPrintLoadFilter;
+                    },
+                    maxWidth: 900,
+                    selectOnCheck: true,
+                    singleSelect: true,
+                    target: "#AccOutPrintTable",
+                    url: "/Store/AccOutPrint/Get",
+                    //事件
+                    onBeforeLoad: function (queryParams) { //可以添加一些额外参数,主要用于查询条件
+                        var arr = $("#SearchAccOutPrintForm").serializeArray();
+                        $.each(arr, function () {
+                            queryParams[this.name] = this.value;
+                        });
+                    }, //end onBeforeLoad
+                    onClickRow: function () {
+                        return false;
+                    }, //end onClickRow
+                    onCreating: function (data) {
+                        return false;
+                    }, //end onCreating
+                    onDblClickRow: function () {
+                        return false;
+                    }, //end onDblClickRow
+                    onLoadError: function () {
+                        $.messager.alert("友情提示", "请求服务器失败，请刷新页面重试! ");
+                    } //end onLoadError
+                });
+                return getBindString;
+            } //end AOPGetBindStringFun
+
+            //获取列属性
+            var AOPGetColumnsFun = function () {
+                var getColumns = [[
+                    //列属性:field(字段,非空) ,title(列名,非空),width(默认80),sortable(默认false),editor(默认null),formatter(默认-函数)
+                    ["PickListDetailNO", "领料单详细号", 100],
+                    ["ProductName", "物资名称", 150],
+                    ["TecnProcessName", "加工工艺", 200],
+                    ["Quantity", "数量", 100],
+                    ["UnitName", "单位", 100],
+                    ["PrchsUp", "出库单价", 100],
+                    ["NotaxAmt", "金额", 100],
+                    ["OutDate", "出库日期", 100],
+                    ["Remarks", "备注", 200]
+                ]]
+                return getColumns;
+            } //end AOPGetColumnsFun
+
+            //获取冻结列属性
+            var AOPGetFrozenColumnsFun = function () {
+                var getFrozenColumns = [[
+                    {
+                        field: "RadioPrint", title: "打印选择", width: 100, align: "center", formatter: function (value, rowData, rowIndex) {
+                            rowData["RadioPrint"] = rowData["PickListID"];
+                            return "<input name=\"AOPRadio\" type=\"radio\" value=\"" + rowIndex + "\" onclick=\"AOPRadioPrintFun('" + rowIndex + "');\" />";
+                        } //end formatter
+                    },
+                    {
+                        field: "CheckboxDetail", title: "详细", width: 100, align: "center", formatter: function (value, rowData, rowIndex) {
+                            if (rowData.PrintFlg == "0") {
+                                return "<input checked=\"checked\" name=\"AOPCheckbox" + rowData.PickListID + "\" type=\"checkbox\" value=\"" + rowIndex + "\" />";
+                            }
+                            else {
+                                return "<input name=\"AOPCheckbox" + rowData.PickListID + "\" type=\"checkbox\" value=\"" + rowIndex + "\" />";
+                            }
+                        } //end formatter
+                    },
+                    { field: "PrintFlgName", title: "打印状态", width: 100, align: "center" },
+                    { field: "PickListID", title: "领料单", width: 150, align: "center" },
+                    { field: "TecnProductOutID", title: "加工产品出库单", width: 150, align: "center" },
+                    { field: "DeptName", title: "请领单位", width: 100, align: "center" }
+                ]];
+                return getFrozenColumns;
+            } //end AOPGetFrozenColumnsFun
+
+            //初始化数据
+            var AOPInitDataFun = function () {
+                var initData =
+                    [
+                        {
+                            PrintFlg: "0", PrintFlgName: "未打印", PickListID: "PL1", TecnProductOutID: "TPO1", BatchID: "B1-1", DeptID: "D1", DeptName: "DN1", PickListDetailNO: "PLD1-1", PartID: "P1", PartName: "PN1", TecnProcessID: "TP1", TecnProcessName: "TPN1", Qty: "1", UnitID: "U1", UnitName: "UN1", PrchsUp: "1.11", NotaxAmt: "11.00", OutDate: "2013-12-25", Rmrs: "R1"
+                        },
+                        {
+                            PrintFlg: "0", PrintFlgName: "未打印", PickListID: "PL2", TecnProductOutID: "TPO2", BatchID: "B2-1", DeptID: "D2", DeptName: "DN2", PickListDetailNO: "PLD2-1", PartID: "P1", PartName: "PN1", TecnProcessID: "TP1", TecnProcessName: "TPN1", Qty: "1", UnitID: "U1", UnitName: "UN1", PrchsUp: "2.22", NotaxAmt: "2.22", OutDate: "2013-12-25", Rmrs: "R2-1"
+                        },
+                        {
+                            PrintFlg: "1", PrintFlgName: "已打印", PickListID: "PL2", TecnProductOutID: "TPO2", BatchID: "B2-2", DeptID: "D2", DeptName: "DN2", PickListDetailNO: "PLD2-2", PartID: "P2", PartName: "PN2", TecnProcessID: "TP2", TecnProcessName: "TPN2", Qty: "2", UnitID: "U2", UnitName: "UN2", PrchsUp: "22.22", NotaxAmt: "22.22", OutDate: "2013-12-25", Rmrs: "R2-2"
+                        },
+                        {
+                            PrintFlg: "0", PrintFlgName: "未打印", PickListID: "PL3", TecnProductOutID: "TPO3", BatchID: "B3-1", DeptID: "D3", DeptName: "DN3", PickListDetailNO: "PLD3-1", PartID: "P1", PartName: "PN1", TecnProcessID: "TP1", TecnProcessName: "TPN1", Qty: "1", UnitID: "U1", UnitName: "UN1", PrchsUp: "3.33", NotaxAmt: "3.33", OutDate: "2013-12-25", Rmrs: "R3-1"
+                        },
+                        {
+                            PrintFlg: "1", PrintFlgName: "已打印", PickListID: "PL3", TecnProductOutID: "TPO3", BatchID: "B3-2", DeptID: "D3", DeptName: "DN3", PickListDetailNO: "PLD3-2", PartID: "P2", PartName: "PN2", TecnProcessID: "TP2", TecnProcessName: "TPN2", Qty: "2", UnitID: "U2", UnitName: "UN2", PrchsUp: "33.33", NotaxAmt: "33.33", OutDate: "2013-12-25", Rmrs: "R3-2"
+                        },
+                        {
+                            PrintFlg: "0", PrintFlgName: "未打印", PickListID: "PL3", TecnProductOutID: "TPO3", BatchID: "B3-3", DeptID: "D3", DeptName: "DN3", PickListDetailNO: "PLD3-3", PartID: "P3", PartName: "PN3", TecnProcessID: "TP3", TecnProcessName: "TPN3", Qty: "3", UnitID: "U3", UnitName: "UN3", PrchsUp: "333.33", NotaxAmt: "333.33", OutDate: "2013-12-25", Rmrs: "R3-3"
+                        },
+                        {
+                            PrintFlg: "1", PrintFlgName: "已打印", PickListID: "PL3", TecnProductOutID: "TPO3", BatchID: "B3-4", DeptID: "D3", DeptName: "DN3", PickListDetailNO: "PLD3-4", PartID: "P3", PartName: "PN4", TecnProcessID: "TP4", TecnProcessName: "TPN4", Qty: "4", UnitID: "U4", UnitName: "UN4", PrchsUp: "3333.33", NotaxAmt: "3333.33", OutDate: "2013-12-25", Rmrs: "R3-4"
+                        }
+                    ];
+                return initData;
+            } //end AOPInitDataFun
+
+
+            /********* 页面加载 *********/
+            $(function () {
+                AOPGetBindStringFun();
+                //$("#AccOutPrintTable").datagrid("loadData", InitAOPDFun());
+            }) //end $(function () {})
+
+        }(jQuery));
+    </script>
+}
+
+
+<!-- layout -->
+<div id="ShowAccOutPrintLayoutDIV">
+    <!-- Button -->
+    <div class="FunctionButton_Area">@UserHelpers.ButtonForPreview("AOPPreviewFun()")@UserHelpers.ButtonForClose("AOPCloseFun()")</div>
+
+
+    <!-- Line -->
+    <div class="LevelLine_div"><hr /></div>
+
+
+    <!-- Title -->
+    <div class="PageTitle_div"><span>出库单打印选择</span></div>
+
+    <!-- Form -->
+    <form class="Search_Form" id="SearchAccOutPrintForm" method="post" name="SearchAccOutPrintForm">
+        <div><span>领料单号：</span>@UserHelpers.InputReadOnly("PickListID","ShowDialogFun()")<span style="margin:0px 0px 0px 1%;">请领单位：</span>@UserHelpers.InputReadOnly("CallinUnitID","ShowDialogFun()")<span style="display:inline-block;margin:0px 0px 0px 1%;text-align:right;width:15%;">加工产品出库单号：</span>@UserHelpers.InputReadOnly("TecnProductOutID","ShowDialogFun()")<span style="margin:0px 0px 0px 1%;">物料名称：</span>@UserHelpers.InputReadOnly("ProductName","AOPShowProdPartInfoScreenByName()")<input id="ProductID" name="ProductID" type="hidden" /></div>
+        <div style="margin-top:1%;"><span>出库日期：</span>@UserHelpers.TimeInput("StartOutDate")<span style="display:inline-block;text-align:center;width:9.3%;">~</span>@UserHelpers.TimeInput("EndOutDate")<span style="display:inline-block;margin:0px 0px 0px 1%;text-align:right;width:15%;">印刷标志：</span>@UserHelpers.SelectWidget("00005","PrintFlg","PrintFlg")<span style="margin:0px 0px 0px 1%;">仓库编码：</span>@UserHelpers.InputReadOnly("WhID","ShowDialogFun()")</div>
+        <div style="margin-top:1%;"><span>出库区分：</span><input name="AccOutPrintFlag" type="radio" checked="checked" /><span>出库</span><input disabled="disabled" name="AccOutPrintFlag" style="margin-left:1%;" type="radio" /><span style="color:gray;">移库</span>@UserHelpers.ButtonForSearch("AOPSearchFun()","SearchAccOutStore")</div>
+    </form>
+
+
+    <!-- Table -->
+    <div class="ShowTableDIV">
+        <table id="AccOutPrintTable"></table>
+    </div>
+
+
+    <!-- Dialog -->
+    <div class="easyui-dialog" id="AOPProdPartSelectDIV" closed="true" data-options="buttons:'#AOPProdPartSelectButtonsDIV',modal:true">
+        <div id="AOPProdPartSelectButtonsDIV">@UserHelpers.ButtonForChoose("SelProdPartAndCloseDialogFun(\"\", \"ProductID\", \"ProductName\", \"0\", \"AOPProdPartSelectDIV\")")@UserHelpers.ButtonForClose("CloseDialogFun(\"AOPProdPartSelectDIV\")")</div>
+    </div>
+    
+
+</div>
+
+
+@*<link rel="stylesheet" href="~/Content/UserInfo/userInfo.css" />*@
+@*<link rel="stylesheet" href="~/Content/css/Store/AccStore.css">*@
+@*
+<script>
+
+    var tableName = "#userTable";//待修改
+    var formName = "#searchForm";//待修改
+    //var form4Add = "#form4Add";
+    //var form4Update = form4Add;
+
+    //var model = ["add", "update"];
+    //var addOrUpdate;//标志:添加还是修改
+
+    //var Id;//暂存修改时的id(主键)
+
+    //转到预览页面
+    var previewInfos = function () {
+        var elements = document.getElementsByTagName("input");
+        var checkPickListDetNo = "";
+        for (var i = 0 ; i < elements.length; i++) {
+            var e = elements[i];
+            if (e.type == "checkbox" && e.checked) {
+                checkPickListDetNo += e.id + ",";//参数需要加工产品出库单（送货单号）、批次号、送货单详细号
+            }        
+        }
+        checkPickListDetNo = checkPickListDetNo.substring(0, checkPickListDetNo.length - 1);
+       // checkID = checkID.substring(0, checkID.length - 1); 
+        //发送异步请求传递给后台我们所选中的数据
+        //var $tabs = parent.$("#tabs");
+        //var $tab = parent.$("#tabs").tabs("getSelected");
+        //$tabs.tabs("update", {
+        //    tab: $tab,
+        //    options: {
+        //        href: "/Store/AccOutPrint/AccOutPrintIndex?Id=" + checkID,
+        //    }
+        //});  
+        parent.addTab("加工产品出库单", "/Store/AccOutPrint/AccOutPrintIndex?materielID=" + checkMaterielID)
+        var checkMaterielID = "";
+        MymergeCells();
+
+    };
+ 
+    //文本框点击事件
+    function SearchBox(value, name) {
+        alert(value + ":" + name)
+    }
+
+    ////单选功能
+    //var tempradio = null;
+    //function radioFun(value, checkedRadio) {
+    //    // var radio = $("#" + value + "").attr("checked", true);    
+    //    if (tempradio == checkedRadio) {
+    //        tempradio.checked = false;
+    //        tempradio = null;
+    //        var row = $(tableName).datagrid('getRows');
+    //        var eles = document.getElementsByTagName('input');
+    //        for (var i = 0; i < eles.length; i++) {
+    //            if (row.length > 0) {
+    //                for (var j = 0 ; j < row.length; j++) {
+    //                    if (row[j].SaeetID == value) {
+    //                        if (eles[i].type == 'checkbox' && eles[i].MaterielID == row[j].MaterielID) {
+    //                            eles[i].checked = false;
+    //                        }
+    //                    }
+    //                }
+    //            }
+    //        }
+    //    } else {
+    //        tempradio = checkedRadio;
+    //        var row = $(tableName).datagrid('getRows');
+    //        var eles = document.getElementsByTagName('input');
+    //        for (var i = 0; i < eles.length; i++) {
+    //            if (row.length > 0) {
+    //                for (var j = 0 ; j < row.length; j++) {
+    //                    if (row[j].SaeetID == value) {
+    //                        if (eles[i].type == 'checkbox' && eles[i].MaterielID == row[j].MaterielID) {
+    //                            eles[i].checked = true;
+    //                        }
+    //                    }
+    //                }
+    //            }
+    //        }
+    //    }
+    //    //MymergeCells();
+    //}
+
+    function radioFun(SaeetID, checkedRadio) {
+        var eles = document.getElementsByTagName('input');
+        for (var i = 0; i < eles.length; i++) {
+            if (eles[i].type == 'checkbox') {
+                eles[i].checked = false;
+            }
+        }
+        var checkBox = $("." + SaeetID + "");
+        for (var j = 0; j < checkBox.length; j++) {
+            var c = checkBox[j];
+            c.checked = true;
+        }
+    }
+    function checkFun() {
+        //MymergeCells();
+    }
+
+    //合并单元格
+    var merged = false;
+    var MymergeCells = function () {
+        setTimeout(function () {
+            if (!merged) {
+                mergeCells({ fields: ["PickListID", "SaeetID", "CallinUnitID", "print"], target: tableName });
+                merged = true;
+            } else {
+                merged = false;
+            }
+        }, 10);
+    }
+
+
+    var columns = [[//["field","title",width,rowspan,colspan,sortable,editor,formatter(v,r,index){} 
+       ["PickListDetNo", "领料单<br/>详细号", 70, null, null, false, true],
+       ["MaterielName", "物资名称", 120, null, null, false, true],
+       ["TecnProcess", "加工工艺", 120, null, null, false],
+       ["Qty", "数量", 100, true, null, function (value, row, index) {
+           return value;
+       }],
+       ["Unit", "单位", 60, null, null, false],
+       ["SellPrc", "出库单价", 70, true, null, function (value, row, index) {
+           return value;
+       }],
+       ["NotaxAmt", "金额", 120, true, true, function (value, row, index) {
+           //var rate = parseInt(row.Aduser) * parseInt(row.Uduser)
+           //return rate.toString() ;
+           return value;
+       }], 
+       ["OutDate", "出库日期", 120, true, true, function (value, row, index) {
+           var date;
+           var strDt = (value + "").replace(/\/Date\(/, "").replace(/\)\//, "");
+           if (isNaN(strDt)) {
+               date = strDt.ToDate();
+           } else {
+               date = new Date(strDt.ToInt());
+           }
+           var str = date.Format("yyyy-MM-dd");
+           row.Paydate = str;
+           return str;
+       }],
+      ["Rmrs", "备注", 120, null, null, false]
+
+    ]];
+
+    $(function () {
+        Common.Functions.createDataGrid({//创建datagrid,详细内容参见functions.js
+            target: tableName,
+            url: "/Store/AccOutPrint/Get",
+            columns: columns,
+            frozenColumns: [[
+                           {
+                                field: 'print', title: '打印选择', width: 70, rowspan: 2, align: 'center', formatter: function (value, row, index) {
+                                    var htmlStr = "";
+                                    htmlStr = ("<input id='" + row.SaeetID + "' type='radio' style='font-size:12px'  value='选择' name='AccOutSelect' onclick=\"" + "radioFun('" + row.SaeetID + "',this)\">");
+                                    return htmlStr;
+                                }
+                            },
+                            {
+                                field: 'Detail', title: '详细', width: 50, rowspan: 2, align: 'center', formatter: function (value, row, index) {
+                                    var htmlStr = value;
+                                    if (row.PrintFlg == "0") {
+                                        htmlStr = ("<input class='" + row.SaeetID + "' id='" + row.PickListDetNo + "' type='checkbox' checked='checked' style='font-size:12px'  value='选择' onclick=\"" + "checkFun('" + row.PickListDetNo + "')\">");
+                                    }
+                                    else if (row.PrintFlg == "1") {
+                                        htmlStr = ("<input class='" + row.SaeetID + "' id='" + row.PickListDetNo + "' type='checkbox' style='font-size:12px'  value='选择' onclick=\"" + "checkFun('" + row.PickListDetNo + "')\">");
+                                       // htmlStr = ("<input class='" + row.SaeetID + "' id='" + row.MaterielID + "' type='checkbox' style='font-size:12px'  value='选择' onclick=\"" + "radioFun('" + row.MaterielID + "')\">");
+                                    }
+                                    return htmlStr;
+
+                                }
+                           },
+                            {
+                                  field: 'PrintFlg', title: '打印状态', align: 'center', width: 70, rowspan: 2, formatter: function (value, row, index) {
+                                    var PrintFlg = value;
+
+                                    if (PrintFlg == "0") {
+                                        PrintFlg = "未打印"
+                                    }
+                                    else if (PrintFlg == "1") {
+                                        PrintFlg = "已打印"
+                                    }
+                                    return PrintFlg;
+
+                                }
+                            },
+                            { field: 'PickListID', title: '领料单', width: 160, rowspan: 2, align: 'center' },
+                            { field: 'SaeetID', title: '加工产品出库单', width: 160, rowspan: 2, align: 'center' },
+                            { field: 'CallinUnitID', title: '请领单位', width: 160, rowspan: 2, align: 'center' }
+                           ]] ,
+            idField: "MaterielID",
+            //toolbar: $("#toolbar"),//工具栏 
+            //checkbox: true,//是否显示checkbox
+            maxWidth: 950,
+            maxHeight: 250,
+            onBeforeLoad: function (queryParams) {//可以添加一些额外参数,主要用于查询条件
+                var arr = $(formName).serializeArray();
+                $.each(arr, function () {
+                    queryParams[this.name] = this.value;
+                });
+            },
+            onLoadError: function () {
+                $.messager.alert("友情提示", "请求服务器失败，请刷新页面重试! "); 
+            },
+            onCreating: function (data) { 
+                MymergeCells();
+                //do something...
+            }
+
+        });      
+   
+    });
+
+</script>
+*@
+
+@*
+<div class="buttons" style="width:100%;text-align:right;"><br />
+    <a href='javascript:void(0);' class='easyui-linkbutton' iconCls='icon-add' onclick='previewInfos();'>预览</a>
+    <a class="easyui-linkbutton" iconCls='icon-cancel' onclick='parent.closeTab(gTitle);'>关闭</a>
+
+    <span style="width:100px;margin-right:10%">&nbsp;</span>
+</div>
+<div style="width:100%;margin:20px 0;">
+    <hr style="width:100%;color:#95B8E7"/>
+</div>
+<div style="width:100%;text-align:center;">
+    <h2>出库单打印选择</h2>
+</div>
+<div style="width:100%;text-align:center;margin-bottom:12px;">
+    <div style="width:95%;margin:auto;text-align:left;">
+    <form id='searchForm' method='post'>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;领料单号：<input id="id" class="easyui-searchbox" style="width:100px"data-options="searcher:SearchBox,prompt:'',menu:'#mm'" name="Id"/> 
+        &nbsp;&nbsp;请领单位：<input id='DeliverId'class="easyui-searchbox" style="width:100px"data-options="searcher:SearchBox,prompt:'',menu:'#mm'" name='DeliverId'/>
+        &nbsp;&nbsp;加工产品出库单号：<input id='SupplierName'class="easyui-searchbox" style="width:100px"data-options="searcher:SearchBox,prompt:'',menu:'#mm'" name='SupplierName'/>     
+        &nbsp;&nbsp;物资名称：<input id='MatterName'class="easyui-searchbox" style="width:100px"data-options="searcher:SearchBox,prompt:'',menu:'#mm'" name='MatterName'/><br/><br/>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;出库日期：<input id='MatterName6'style="width:110px" type='text' class='easyui-datebox' name='MatterName'/>&nbsp;~&nbsp;<input id='MatterName7'style="width:110px" type='text' class='easyui-datebox' name='MatterName'/>       
+        &nbsp;&nbsp;印刷标志：
+        <select id='Falg' name='Sex'>
+            <option value='' selected>全部</option>
+            <option value=1>未打印</option>
+            <option value=0>已打印</option>
+        </select>
+        &nbsp;&nbsp;仓库编码：<input id='DeliverId1'class="easyui-searchbox" style="width:100px"data-options="searcher:SearchBox,prompt:'',menu:'#mm'" name='DeliverId'/>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <a class='easyui-linkbutton' href='javascript:void(0);' onclick='searchFun();'>查询</a>
+    </form>
+</div>
+</div>
+<div class="datagrid" style="text-align:center;width:100%;">
+    <table id="userTable"></table>
+</div>
+*@
+

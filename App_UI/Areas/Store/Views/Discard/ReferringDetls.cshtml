@@ -1,0 +1,252 @@
+﻿@using App_UI.Resource.ViewText.Common
+@using App_UI.Resource.ViewText.Purchase
+@using Model
+<script type="text/javascript" src="~/Scripts/common/dialog.js"></script>
+
+
+@{
+    ViewBag.Title = "ReferringDetls";
+}
+<link rel="stylesheet" href="~/Content/css/Store/ProductScrapped.css" />
+<!--buttons-->
+<div class="buttons" style="width: 100%; text-align: right;">
+    
+        <input type='button' style='font-size: 15px; height: 25px;' value='登录' id='login' onclick='loginFun();' disabled="disabled">
+        <input type='button' style='font-size: 15px; height: 25px;' value='编辑' id='edit' onclick='editFun();'>
+        <input type='button' style='font-size: 15px; height: 25px;' value='打印预览' id='print' onclick='printFun();'>  
+      
+<a href='javascript:void(0);' class='easyui-linkbutton' iconcls='icon-add' onclick='closeFun();'>关闭</a>
+    <span style="width: 100px; margin-right: 10%">&nbsp;</span>
+</div>
+<!--line-->
+<div style="width: 100%; margin: 20px 0;">
+    <hr style="width: 100%; color: #95B8E7" />
+</div>
+<!--content-->
+<div style="width: 100%; text-align: center; margin-bottom: 15px;">
+  
+</div>
+<div style="width: 100%; text-align: center; margin-bottom: 14px;">
+    <span id="mainTitle">在库品报废申请详细</span>
+</div>
+
+<div style="width: 100%; text-align: center;">
+    <div style="width: 53%; margin: auto; text-align: right;">
+        <form id="processForm" method='post'>
+            <div>
+                <span style="margin-left: 20px;" id="DisardId">报废单号：@ViewBag.iiid</span>
+                
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="datagrid">
+    <table id="IPPTable"></table>
+</div>
+
+
+
+@section head{
+    <script>
+
+        var ii = "@ViewBag.state";
+        var table;
+        var form;
+        var pi;
+        var dataRows = 0;//数据的总行数
+        var Index = 0;
+
+        /***********编辑行所用到的一些方法***************/
+
+        //结束编辑
+        function endEdit() {
+            var i = 0;
+            while (i < dataRows) {
+                //var ed = $("#IPPTable").datagrid("getEditors", i);
+                //前12列关闭编辑功能
+                for (j = 0; j < 11; j++) {
+                    $("#IPPTable").datagrid("endEdit", i);
+                };
+                i++;
+            };
+        };
+
+       
+        //启动编辑
+        vareditorInfons = function () {
+            var row = $(table).datagrid('getRows');
+            dataRows = (dataRows + 1);
+            if (row.length > 0) {
+                for (var i = 0 ; i < row.length; i++) {
+                    $(table).datagrid("beginEdit", i);
+                }
+            }
+        }
+
+        
+        /***********编辑行所用到的一些方法end***************/
+
+
+
+        //跳转打印页面
+        var printFun = function () {
+
+            parent.addTab("打印", "/Store/Discard/PrintPreview?DiscardId=@ViewBag.iiid");
+        };
+
+       /***********登录和编辑strat***************/
+        //登录
+        var loginFun = function () {
+            var c = $("#login").attr("disabled", true);
+            var d = $("#edit").attr("disabled", false);
+            var p = $("#print").attr("disabled", false);
+            var c = $("#add").attr("disabled", true);
+            save();
+            $('.Onblue_style').addClass('txt_boxStyle');
+            //endEdit();
+        };
+        //编辑
+        //var editFun = function () {
+        //    var c = $("#login").attr("disabled", false);
+        //    var d = $("#edit").attr("disabled", true);
+        //    var p = $("#print").attr("disabled", true);
+        //    var i = $("#add").attr("disabled", false);
+        //    vareditorInfons();
+            
+        //};
+
+            /***********  登录和编辑end***************/
+
+        //取得选中行的主键（PartDtID），并跳转到详细页面
+        var editFun = function () {
+            var row = $("#IPPTable").datagrid('getSelections');
+            
+            //跳转到详细页面
+            parent.addTab("报废申请详细", "/Store/Discard/ApplicationDetls?flg=0&discardId=@ViewBag.iiid");
+           
+
+        };
+
+       
+        
+       
+       
+
+        //列属性:field,title,width,sortable,editor,formatter 
+        //获得列属性
+        var getColumns = function () {
+            var _columns = [[
+                    ["PartAbbrevi", "物料编号", null, true],
+                    ["PartDtName", "物料名称", 120, true],
+                    ["PartDtSpec", "规格", null, true],
+                    ["BthID", "批次号", 120, true],
+                    ["Quantity", "数量", 40, false,"text"
+                    ],
+                    ["PrchsUp", "单价", 50, false],
+                    ["TotalAmt", "总价", 50, false],
+                    ["StoreCls", "让步区分", 70, false],
+                    ["WareHouseID", "仓库ID", null, false],
+                    ["InDate", "入库日期", 130, false, null, function (value, row, index) {
+                        var date;
+                        var strDt = (value + "").replace(/\/Date\(/, "").replace(/\)\//, "");
+                        if (isNaN(strDt)) {
+                            date = strDt.ToDate();
+                        } else {
+                            date = new Date(strDt.ToInt());
+                        }
+                        var str = date.Format("yyyy-MM-dd");
+                        row.Addate = str;
+                        return str;
+                    }],
+                    ["QualityPro", "报废原因", 120, false],
+                    ["SltPlan", "处理方案", 80, false, "text"],
+                    ["PartDtID", "物料编号", null, true]
+
+                ]];
+
+                return _columns;
+
+         };
+        /*************************保存start*****************************/
+        var applictionFun = function () {
+            var row = $("#IPPTable").datagrid('getSelections');
+            if (row.length > 0) {
+                var check = "";
+                var whId = row[0].WareHouseID;
+                var BthID = "";
+                for (var i = 0; i < row.length; i++) {
+                    check += row[i].PartDtID + ",";
+                    BthID += row[i].BthID + ",";
+                }
+                check = check.substring(0, check.length - 1);
+                BthID = BthID.substring(0, BthID.length - 1);
+                //跳转到详细页面
+                parent.addTab("报废申请详细", "/Store/Discard/ApplicationDetls?flg=0&pdtID=" + check + "&whId=" + whId + "&bthID=" + BthID);
+            }
+            else {
+                $.messager.alert("友情提示", "请您选择要申请的数据");
+            }
+
+        };
+        /************************保存end*****************************/
+
+        $(function () {
+            table = $("#IPPTable");
+            form = $("#processForm");
+            Common.Functions.createDataGrid({//创建datagrid,详细内容参见functions.js
+                target: "#IPPTable",//table容器,必须
+                url: "/Store/Discard/GetApplication?pdtID=@ViewBag.id&whId=@ViewBag.iid&bthID=@ViewBag.BthID&discardId=@ViewBag.iiid",//获取数据的地址,必须
+                    columns: getColumns(),//列属性,必须
+                //idField: "UId",//标识字段
+                    toolbar: $("#toolbar"),//工具栏 
+                //checkbox: true,//是否显示checkbox
+                    maxWidth: 1000,//最大宽度
+                    maxHeight: 300,//最大高度
+                    onLoadError: function () {
+                        alert("请求服务器失败，请刷新页面重试!");
+                    },
+                    onCreating: function (data) {//数据成功加载
+                        if ("@ViewBag.state" == "1")
+                        {
+                            $("input:text").attr("disabled", true);
+                            $('.Onblue_style').addClass('txt_boxStyle');
+                        }//从在库品报废申请一览加载数据到参照画面关闭可编辑的列
+                      
+                    },
+
+                //重写双击事件
+                    onDblClickRow: function (rowIndex, rowData) {
+                        //var r = _options.onDblClickRow.call(_target, rowIndex, rowData);
+                        //if (r == false) {
+                        //} else {
+                        //    //_target.datagrid("beginEdit", rowIndex);
+                        //    _target.data("lastRowIndex", rowIndex);
+                        //}
+                        //return true;
+                    },
+                    
+                    onClickRow: function (rowIndex, rowData) {
+                        pi = rowIndex;
+                        return false;
+                    },
+                    loadFilter: function (data) {
+                        var _data = {};
+                        _data.rows = isUndefined(data.rows) ? data : data.rows;
+                        _data.total = isUndefined(data.total) ? 5 : data.total;
+                        return _data;
+                    }
+            
+          
+          })
+
+          //PartDtID列不可见
+          $('#IPPTable').datagrid('hideColumn', 'PartDtID');
+
+
+
+      });
+
+
+    </script>
+}

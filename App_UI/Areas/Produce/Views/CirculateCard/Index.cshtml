@@ -1,0 +1,156 @@
+﻿@using App_UI.Resource.ViewText.Produce
+@section head
+{
+    <style type="text/css">
+        .table_Search {
+            margin: auto;
+        }
+    </style>
+
+
+    <script>
+
+        /********************变量  开始*******************/
+        var table = "#table";
+        var form = "#searchForm"; //表单
+        var ReceQty = 0;
+        /********************变量  结束*******************/
+
+
+        /********************按钮  开始*******************/
+
+        //删除
+        var deleteFun = function () {
+            alert("save");
+        };
+
+        //关闭
+        var closeFun = function () {
+            alert("close");
+        };
+
+        var search_Btn_Fun = function () {
+            $(table).datagrid("load");
+        };
+        //弹出"添加人员信息"窗口
+        var show_detail_form_Fun = function (id) {
+
+            parent.addTab("加工流转卡登录", '/Produce/CirculateCard/Detail/' + id);
+        };
+
+        var showUpdateFormFun = function () {
+            var selectedRows = $(table).datagrid("getSelections");
+            if (selectedRows.length == 0) {
+                $.messager.alert("提示", "您尚未选中任何记录");
+            } else {
+                var id = selectedRows[0]["ProcDelivID"];
+                parent.addTab("加工流转卡计划修改", '/Produce/CirculateCard/Edit/' + id);
+            }
+        };
+
+        function pageClose() {
+            parent.closeTab();
+
+        }
+
+        /********************按钮  结束*******************/
+
+
+        /********************方法  开始*******************/
+        //返回列属性
+        var getColumns = function () {
+            //列属性: field(字段名,非空) , title(列名) , width(默认80) , sortable(默认false) , editor(默认null) , formatter(默认-函数)
+            var columns = [[]];
+            columns[0].push(["ProcDelivID", "流转卡号", 120, true]);
+            columns[0].push(["ProdModel", "产品型号", 80, true]);
+            columns[0].push(["ReceQty", "领料数量", 80, true, null, function (value, row) {
+                ReceQty = value;
+                return value;
+            }]);
+            columns[0].push(["FinishProcess", "已完成工序", 110, true]);
+            columns[0].push(["ProcessInDoing", "正在进行工序", 110, true]);
+            columns[0].push(["LastProcessQty", "进度估算", 90, true, null, function (value, row) {
+                var rs = value * 100 / ReceQty;
+                return rs + "" + "%";
+            }]);
+            columns[0].push(["ScheduleState", "进度状态", 90, false]);
+            columns[0].push(["00", "进度详细", 100, false, null, function (value, row) {
+                return "<a href='#' onclick=\"show_detail_form_Fun('" +row.ProcDelivID + "');\" >点击查看详细</a>";
+            }]);
+            return columns;
+        };
+
+
+
+        /********************方法  结束*******************/
+
+
+        /********************事件  开始*******************/
+
+        /********************事件  结束*******************/
+
+
+        /********************ready 开始*******************/
+
+        $(function () {
+            Common.Functions.createDataGrid({
+                //创建datagrid,详细内容参见functions.js
+                target: table,//table容器,必须
+                url: "/Produce/CirculateCard/Get",//获取数据的地址,必须
+                columns: getColumns(),//列属性,必须
+                checkbox: true,
+                singleSelect:true,
+                sortName: "",
+                sortOrder: "",//默认排序
+                maxWidth: 1030,//最大宽度
+                maxHeight: 600,//最大高 度
+                onBeforeLoad: function (queryParams) { //可以添加一些额外参数,主要用于查询条件
+                    var arr = $(form).serializeArray();
+                    $.each(arr, function () {
+                        queryParams[this.name] = this.value;
+                    });
+                },
+                loadFilter: function (data) {
+                    var _data = {};
+                    _data.rows = data.rows ? data.rows : data;
+                    _data.total = data.total ? data.total : 0;
+                    return _data;
+                }
+            });
+        });
+
+
+        /********************ready 结束*******************/
+
+
+    </script>
+
+}
+
+
+@*buttons*@
+<div class="FunctionButton_Area">
+    @UserHelpers.ButtonForUpdate("showUpdateFormFun()")
+    @UserHelpers.ButtonForClose("pageClose()")
+    <span style="width: 30px; margin-right: 10%">&nbsp;</span>
+</div>
+@UserHelpers.Line()
+@UserHelpers.Title(VT_CirculateCard.IndexTitle)
+@*form*@
+<div style="margin: 10px 0; width: auto; margin: 10px auto;">
+    <form id="searchForm" class="Search_Form">
+        <table class="table_Search">
+            <tr>
+                <td>流转卡号：</td>
+                <td>@UserHelpers.InputSimple("ProcDelivID")</td>
+                <td>产品型号：</td>
+                <td>@UserHelpers.Input("ProdModel")</td>
+                <td>@UserHelpers.ButtonForSearch("search_Btn_Fun()")</td>
+            </tr>
+        </table>
+    </form>
+</div>
+
+<div class="datagrid">
+    <table id="table"></table>
+</div>

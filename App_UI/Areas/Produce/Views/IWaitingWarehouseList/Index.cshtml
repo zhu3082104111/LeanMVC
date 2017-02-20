@@ -1,0 +1,186 @@
+﻿@using App_UI.Resource.ClientMessage
+@using App_UI.Resource.ViewText.Common
+@using App_UI.Resource.ViewText.Produce
+@using Extensions
+@{
+    ViewBag.Title = "加工待交仓一览";
+}
+@section head{
+    <script src="~/Scripts/common/dialog.js" type="text/javascript"></script>
+    <script>
+
+        //搜索功能
+        searchFun = function () {
+            $("#searchForm").form("submit", {
+                //form提交
+                url: "/Produce/IWaitingWarehouseList/GetData",
+                onSubmit: function (param) { //除表单外的数据(分页)
+                    var pager = $("#tabWaithouse").datagrid("getPager");
+                    var pagerOptions = $(pager).pagination("options");
+                    param.rows = pagerOptions.pageSize;
+                    param.page = 1;
+                },
+                success: function (data) {
+                    $("#tabWaithouse").datagrid("loadData", eval('(' + data + ')')); //重新加载数据
+                }
+            });
+        };
+
+        //交仓
+        var PostWarehouse = function () {
+            var row = $("#tabWaithouse").datagrid('getSelected');
+            if (row != null) {
+                $.ajax({
+                    async: false,
+                    url: "/Produce/IWaitingWarehouseList/PostWarehouse",
+                    data: {
+                        postData: row,
+                    },
+                    dataType: "json",
+                    type: "post",
+                    success: function (data) {
+                        if (data.Result == true) {
+                            searchFun();
+                            $.messager.alert("@VT_Common.Info", data.Message);
+                            //parent.addTab("123", "/Produce/ProducessProductWarehouse/Detail?procDelivID=" + data.ProcDelivID);
+                        } else {
+                            $.messager.alert("@VT_Common.Info", "@ResourceHelper.ConvertMessage(VT_Common.MAddFailed, new string[] { CM_Produce.MSG40401001 })");
+                        }
+                    },
+                    error: function () {
+                        $.messager.alert("@VT_Common.Info", "@CM_Common.MSG0002");
+                    }
+                });
+
+            } else {
+                $.messager.alert("@VT_Common.Tips", "@VT_Common.PleaseSelect");
+            }
+        };
+
+        //当点击RadioButton
+        var onClickRadioButton = function (index, value) {
+            //alert("index" + index + "value" + value);
+            $('#tabWaithouse').datagrid('beginEdit', index);
+            $('#tabWaithouse').datagrid('getRows')[index]['ConcessionPart'] = value;
+            $('#tabWaithouse').datagrid('endEdit', index);
+        };
+        //关闭当前标签
+        var closeFun = function () {
+            parent.closeTab();
+        };
+
+        /***********放大镜功能 开始***************/
+
+        //点击产品型号(即产品略称)放大镜
+        var ShowProdPartInfoScreenByAbbrev = function () {
+            ShowProdPartInfo("ProdPartSelectDiv", "", $("#TxtProdAbbrev").val());
+        };
+
+        /***********放大镜功能 结束***************/
+
+
+        //列属性:field(字段,非空) ,title(列名,非空),width(默认80),sortable(默认false),editor(默认null),formatter(默认-函数)
+        var columns = [[
+            ["ProcDelivID", "@VT_IWaitingWarehouseList.ProcDelivID", 180, true],
+            ["ProdAbbrev", "@VT_IWaitingWarehouseList.ProdAbbrev", 120, true],
+            ["MaterReqQty", "@VT_IWaitingWarehouseList.MaterReqQty", 120, true],
+            ["WarehQtyAvailable", "@VT_IWaitingWarehouseList.WarehQtyAvailable", 120, true],
+            ["WarehQtySubmitted", "@VT_IWaitingWarehouseList.WarehQtySubmitted", 120, true],
+            ["WarehouseNo", "@VT_IWaitingWarehouseList.WarehouseNo", 120, true],
+            ["ConcessionPart", "@VT_IWaitingWarehouseList.ConcessionPart", 120, false, null, function (value, row, index) {
+                var radio = "";
+                if (value == "1") {
+                    radio = "<input type='radio' id='radio" + index + "' name='radio" + index + "' value='1' checked='checked' onclick='onClickRadioButton(" + index + ",1);'/>@VT_IWaitingWarehouseList.Yes<input type='radio' id='radio" + index + "' name='radio" + index + "' value='0' onclick='onClickRadioButton(" + index + ",0);'/>@VT_IWaitingWarehouseList.No";
+                } else {
+                    radio = "<input type='radio' id='radio" + index + "' name='radio" + index + "' value='1' onclick='onClickRadioButton(" + index + ",1);'/>@VT_IWaitingWarehouseList.Yes<input type='radio' id='radio" + index + "' name='radio" + index + "' value='0' checked='checked' onclick='onClickRadioButton(" + index + ",0);'/>@VT_IWaitingWarehouseList.No";
+                }
+                return radio;
+            }]
+        ]];
+
+        $(function () {
+            Common.Functions.createDataGrid({
+                //创建datagrid,详细内容参见functions.js
+                target: $("#tabWaithouse"),//table容器,必须
+                url: "/Produce/IWaitingWarehouseList/GetData", //"/Admin/UserInfo/Get",//获取数据的地址,必须
+                columns: columns,//列属性,必须
+                idField: "ProcDelivID",//标识字段
+                //toolbar: $("#toolbar"),//工具栏
+                checkbox: true,//是否显示checkbox
+                maxWidth: 1000,//最大宽度
+                maxHeight: 300,//最大高度
+                //pageSize: 10,
+                //pageList: [5, 10, 20, 30],
+                singleSelect: true,
+                onBeforeLoad: function (queryParams) { //可以添加一些额外参数,主要用于查询条件
+                    var arr = $("#searchForm").serializeArray();
+                    $.each(arr, function () {
+                        queryParams[this.name] = this.value;
+                    });
+                },
+                onLoadError: function () {
+                    $.messager.alert("@VT_Common.Info", "@CM_Common.MSG0002");
+                },
+                onCreating: function (data) { //数据成功加载
+                    //do something...
+                    //return false;
+                },
+                loadFilter: function (data) {
+                    var d = {};
+                    d.rows = data.rows ? data.rows : data;
+                    return d;
+                }
+            });
+
+            //按钮事件
+            $("#PostWarehouse").bind('click', PostWarehouse);
+            $("#btnClose").bind('click', closeFun);
+
+
+        });
+
+    </script>
+}
+<div class="buttons" style="width: 100%; text-align: right;">
+    @UserHelpers.ButtonForWarehouse("","PostWarehouse","")
+    @UserHelpers.ButtonForClose("", "btnClose")
+    <span style="width: 100px; margin-right: 10%">&nbsp;</span>
+</div>
+
+@UserHelpers.Line()
+
+@UserHelpers.Company_Title(VT_Common.CompanyName)
+
+@UserHelpers.Title(VT_IWaitingWarehouseList.IIndexTitle)
+<br />
+
+<div style="width: 100%; text-align: center;">
+    <div id="toolbar" style="width: 800px; margin: auto;">
+        <form id="searchForm" method="post" class="Search_Form">
+            <table style="width: 100%; text-align: center;">
+                <tr>
+                    <td align="left">
+                        @VT_IWaitingWarehouseList.ProcDelivID：
+                        @UserHelpers.InputSimple("TxtProcDelivID",new {size=20,maxlength=20})
+                        @VT_IWaitingWarehouseList.ProdAbbrev：
+                        @UserHelpers.Input("TxtProdAbbrev",200,200,"ShowProdPartInfoScreenByAbbrev()")
+                    </td>
+                    <td align="right">@UserHelpers.ButtonForSearch("searchFun()", "Search")</td>
+                </tr>
+            </table>
+        </form>
+    </div>
+</div>
+<div class="datagrid" style="text-align: center; width: 100%;">
+    <table id="tabWaithouse"></table>
+</div>
+
+<!-- *************************************************************** 子查询画面START ******************************************************** -->
+<!-- Dialog -->
+<!-- 物料选择对话框 -->
+<div class="easyui-dialog" id="ProdPartSelectDiv" closed="true" data-options="buttons:'#prodPartSelect',modal:true"></div>
+<div id="prodPartSelect">
+    @UserHelpers.ButtonForChoose("SelProdPartAndCloseDialogFun('', 'TxtProdAbbrev', 'TxtProdAbbrev', '0', 'ProdPartSelectDiv')")
+    @UserHelpers.ButtonForClose("CloseDialogFun('ProdPartSelectDiv')")
+</div>
+<!-- *************************************************************** 子查询画面END ******************************************************** -->

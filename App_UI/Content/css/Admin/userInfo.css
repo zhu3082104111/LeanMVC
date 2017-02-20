@@ -1,0 +1,13 @@
+﻿#dlg form * {
+    font-size:12pt;
+}
+.ftitle {
+    font-size:15pt;text-align:center;margin:10px 0;
+}
+.operator {/*操作-超链的样式*/
+    color:blue;font-size:5pt;
+}
+
+.datagrid > div {
+    margin:auto
+}

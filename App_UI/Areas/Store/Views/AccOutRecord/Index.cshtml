@@ -1,0 +1,433 @@
+﻿@model int
+
+<link rel="stylesheet" href="~/Content/css/Store/AccStore.css">
+<script>
+    var tableName = "#userTable";//待修改
+    var formName = "#searchForm";//待修改
+
+    //修改某条记录
+    var updateFun = function () {
+        var row = $(tableName).datagrid('getSelections');
+        if (row.length > 0) {
+            for (var i = 0 ; i < row.length; i++) {
+                var index = $(tableName).datagrid("getRowIndex", row[i]);
+                $(tableName).datagrid("beginEdit", index);
+            }
+            document.getElementById("update").style.display = "none";
+            document.getElementById("save").style.display = "";
+            document.getElementById("cancel").style.display = "";
+        }
+        else {
+            $.messager.alert("友情提示", "请您选择一条要修改的数据!");
+        }
+    }
+
+    //取消编辑
+    var cancelFun = function () {
+        $.messager.confirm("友情提示", "您确认取消修改吗？", function (cancelOK) {
+            if (cancelOK) {
+                editRow = undefined;
+                $(tableName).datagrid("rejectChanges");
+                $(tableName).datagrid("unselectAll");
+                document.getElementById("update").style.display = "";
+                document.getElementById("save").style.display = "none";
+                document.getElementById("cancel").style.display = "none";
+            }
+        });
+    }
+
+    //保存功能
+    var saveFun = function () {
+        $.messager.confirm("友情提示", "确认保存?", function (updateOK) {
+            if (updateOK) {
+                var row = $(tableName).datagrid('getSelections');
+                if (row.length > 0) {
+                    //定义一个数组用于存放table中的数据
+                    var orderList = [];
+                    for (var i = 0 ; i < row.length; i++) {
+                        $(tableName).datagrid("endEdit", i);
+                        if (row[i].PrchsUp != "" || row[i].Qty != "") {
+                            var order = {};
+                            order["RowIndex"] = i;                           
+                            order["PickListID"] = row[i].PickListID;
+                            order["PickListDetNo"] = row[i].PickListDetNo;
+                            order["PickListTypeID"] = row[i].PickListTypeID;
+                            order["PickListDetNo"] = row[i].PickListDetNo;
+                            order["SaeetID"] = row[i].SaeetID;
+                            order["CallinUnitID"] = row[i].CallinUnitID;
+                            order["MaterielID"] = row[i].MaterielID;
+                            order["MaterielName"] = row[i].MaterielName;
+                            order["BthID"] = row[i].BthID;
+                            order["GiCls"] = row[i].GiCls;
+                            order["PdtSpec"] = row[i].PdtSpec;
+                            order["TecnProcess"] = row[i].TecnProcess;
+                            order["Qty"] = row[i].Qty;
+                            order["Unit"] = row[i].Unit;
+                            order["PrchsUp"] = row[i].PrchsUp;
+                            order["SellPrc"] = row[i].SellPrc;
+                            order["NotaxAmt"] = row[i].NotaxAmt;
+                            order["OutDate"] = row[i].OutDate;
+                            order["Rmrs"] = row[i].Rmrs;
+
+                            //将order加进orderList
+                            orderList.push(order);
+                        } else {
+                            $.messager.alert("友情提示", "有单价或数量没有填写！");
+                        }
+                    }
+
+                    $.ajax({
+                        async: true,
+                        url: "/Store/AccOutRecord/AccOutRecordSave",
+                        data: { orderList: orderList },
+                        type: "post",
+                        success: function (data) {
+                            var _data = eval('(' + data + ')');
+                            if (_data.Result == true) {
+                                $.messager.alert("信息", _data.Message);
+                            } else {
+                                //title：显示在标题面板的标题文本;msg：提示框显示的消息文本;icon：提示框显示的图标,可用的值是：
+
+                                //error, question, info, warning; fn：当窗口关闭时触发的回调函数
+                                //$.messager.alert("信息", _data.Message, "info", function () {
+                                //    //开启编辑
+                                //    openEdit();
+                                //});
+                                //do something another...
+                            }
+                        }
+                    });
+                    console.info(rowData);
+                }
+            }
+        });
+        document.getElementById("update").style.display = "";
+        document.getElementById("save").style.display = "none";
+        document.getElementById("cancel").style.display = "none";
+    }
+
+
+    //删除根据Enable修改某条记录
+    var deleteFun = function () {
+        var row = $(tableName).datagrid('getSelections');
+        if (row.length > 0) {
+            $.messager.confirm("友情提示", "确认删除?", function (updateOK) {
+                if (updateOK) {
+                    var orderList = [];
+                    for (var i = 0; i < row.length; i++) {
+                        if (row[i].MaterielID != "") {
+                            var order = {};
+                            order["RowIndex"] = i;
+                            order["PickListID"] = row[i].PickListID;
+                            order["PickListDetNo"] = row[i].PickListDetNo;
+                            order["PickListTypeID"] = row[i].PickListTypeID;
+                            order["PickListDetNo"] = row[i].PickListDetNo;
+                            order["SaeetID"] = row[i].SaeetID;
+                            order["CallinUnitID"] = row[i].CallinUnitID;
+                            order["MaterielID"] = row[i].MaterielID;
+                            order["MaterielName"] = row[i].MaterielName;
+                            order["BthID"] = row[i].BthID;
+                            order["GiCls"] = row[i].GiCls;
+                            order["PdtSpec"] = row[i].PdtSpec;
+                            order["TecnProcess"] = row[i].TecnProcess;
+                            order["Qty"] = row[i].Qty;
+                            order["Unit"] = row[i].Unit;
+                            order["PrchsUp"] = row[i].PrchsUp;
+                            order["SellPrc"] = row[i].SellPrc;
+                            order["NotaxAmt"] = row[i].NotaxAmt;
+                            order["OutDate"] = row[i].OutDate;
+                            order["Rmrs"] = row[i].Rmrs;
+
+                            //将order加进orderList
+                            orderList.push(order);
+                        } else {
+                            
+                        }
+                    }
+                    $.ajax({
+                        async: true,
+                        url: "/Store/AccOutRecord/AccOutRecordDel",
+                        data: { orderList: orderList },
+                        type: "post",
+                        success: function (data) {
+                            var _data = eval('(' + data + ')');
+                            if (_data.Result == true) {
+                                searchFun();//重新加载数据
+                                $.messager.alert("信息", _data.Message, "info", function () {
+                                    //window.location.reload();//刷新数据
+
+                                });
+                            } else {
+                                //title：显示在标题面板的标题文本;msg：提示框显示的消息文本;icon：提示框显示的图标,可用的值是：
+
+                                //error, question, info, warning; fn：当窗口关闭时触发的回调函数
+                                //$.messager.alert("信息", _data.Message, "info", function () {
+                                //    //开启编辑
+                                //    openEdit();
+                                //});
+                                //do something another...
+                            }
+                        }
+                    });
+                    console.info(rowData);
+                }
+            });
+        }
+        else {
+            $.messager.alert("友情提示", "请您选择一条要删除的数据!");
+        }
+    }
+
+
+    //文本框点击事件
+    function SearchBox(value, name) {
+        alert(value + ":" + name);
+    }
+
+    //搜索
+    var searchFun = function () {
+        $(formName).form("submit", {//ajax form提交
+            url: "/Store/AccOutRecord/Get",
+            onSubmit: function (param) {//除表单外的数据(分页)
+                var pager = $(tableName).datagrid("getPager");
+                var pagerOptions = $(pager).pagination("options");
+                param.rows = pagerOptions.pageSize;
+                param.page = 1;//pagerOptions.pageNumber;
+            },
+            success: function (data) {
+                $(tableName).datagrid("loadData", eval('(' + data + ')'));//重新加载数据
+            }
+        });
+    }
+    //单选功能
+    function radioFun(value) {
+        alert(value + "单选功能");
+    }
+
+    //关闭窗体
+    function CloseFun() {
+        parent.closeTab(gTitle)
+    }
+
+    //列属性:field,title,width,sortable,editor,formatter
+    var columns = [[
+        ["PickListID", "领料单号", 110, true],
+        ["PickListDetNo", "领料单<br/>详细号", 60, true],
+        ["SaeetID", "加工产品出库单", 150, true],
+        ["CallinUnitID", "请领单位", 210, true],
+        ["MaterielName", "物资名称", 120, false],
+        ["BthID", "批次号", 120, false],
+        ["GiCls", "让步区分", 80, false, null, function (value, row, index) {
+            var htmlStr = "";
+            if (row.GiCls == "999") {
+                htmlStr = "正常";
+            } else {
+                htmlStr = "内径过大";
+            }
+            return htmlStr;
+        }],
+        ["PdtSpec", "规格型号", 120, false],
+        ["TecnProcess", "加工工艺", 180, true],
+        ["Qty", "数量", 80, true, { type: "text" }, function (value, row, index) {
+            return value;
+        }],
+        ["Unit", "单位", 40, false],
+        ["PrchsUp", "单价", 60, true, { type: "text" }, function (value, row, index) {
+             return value;
+         }],
+        ["SellPrc", "出库价格", 80, false],
+        ["NotaxAmt", "金额", 100, false],       
+        ["OutDate", "出库日期", 100, true, true, function (value, row, index) {
+            var date;
+            var strDt = (value + "").replace(/\/Date\(/, "").replace(/\)\//, "");
+            if (isNaN(strDt)) {
+                date = strDt.ToDate();
+            } else {
+                date = new Date(strDt.ToInt());
+            }
+            var str = date.Format("yyyy-MM-dd");
+            return str;
+        }],
+        ["Rmrs", "备注", 100, true, { type: "text" }, function (value, row, index) {
+            return value;
+        }]
+    ]];
+
+    $(function () {
+        Common.Functions.createDataGrid({//创建datagrid,详细内容参见functions.js
+            target: tableName,
+            url: "/Store/AccOutRecord/Get",
+            columns: columns,
+            idField: "MaterielID",
+            nowrap: false,
+            //toolbar: $("#toolbar"),//工具栏 
+            checkbox: true,//是否显示checkbox
+            maxWidth: 950,
+            maxHeight: 300,
+            onBeforeLoad: function (queryParams) {//可以添加一些额外参数,主要用于查询条件
+                var arr = $(formName).serializeArray();
+                $.each(arr, function () {
+                    queryParams[this.name] = this.value;
+                });
+            },
+            onLoadError: function () {
+                $.messager.alert("友情提示", "请求服务器失败，请刷新页面重试! ");
+            },
+            onCreating: function (data) {
+                //do something...
+            }
+            //, //endEdit该方法触发此事件
+            //onAfterEdit: function (rowIndex, rowData, changes) {
+            //    //获取旧数据
+            //    //$(tableName).data("datagrid").originalRows;    
+            //    //提交修改数据
+            //    if (changes.Qty == rowData.Qty || changes.PrchsUp == rowData.PrchsUp) {
+            //        $.ajax({
+            //            url: '/Store/AccOutRecord/AccOutRecordSave',
+            //            type: 'POST',
+            //            data: {
+            //                PickListID: rowData.PickListID, SaeetID: rowData.SaeetID, CallinUnitID: rowData.CallinUnitID, MaterielID: rowData.MaterielID, BthID: rowData.BthID, GiCls: rowData.GiCls, PdtSpec: rowData.PdtSpec,
+            //                TecnProcess: rowData.TecnProcess, Qty: rowData.Qty, Unit: rowData.Unit, PrchsUp: rowData.PrchsUp, NotaxAmt: rowData.NotaxAmt, SellPrc: rowData.SellPrc, OutDate: rowData.OutDate, Rmrs: rowData.Rmrs
+            //            },
+            //            //contentType: 'application/json;',
+            //            //dataType: 'json',
+            //            success: function (data) {
+            //                var _data = eval('(' + data + ')');
+            //                console.info(_data);
+            //                if (_data.result == true) {
+            //                    $.messager.alert("友情提示", "保存成功! ")
+            //                    $(tableName).datagrid("reload");
+            //                } else {
+            //                    $.messager.alert("友情提示", "保存失败! " + data);
+            //                    //do something another...
+            //                }
+            //            }
+            //        });
+            //        //console.info(rowData);
+            //        //editRow = undefined;
+            //    } else {
+            //        $.messager.alert("友情提示", "当前页面无数据修改! ")
+            //    }
+            //}
+        });
+
+       // $(tableName).datagrid({
+            //onDblClickRow:function(rowIndex,row)
+            //{
+            //    var row = $(tableName).datagrid('getSelected');
+            //    if (row) {
+            //        alert('ID:' + row.Id + "\n日期:" + row.Paydate);
+            //    }
+            //}
+      //  });
+       
+    });
+
+
+</script>
+
+<style>
+.Search_Table {
+        margin:auto;      
+        text-align:left;
+    }
+</style>
+
+<div class="buttons" style="width:100%;text-align:right;">
+    @* <a id="save" href='javascript:void(0);' class='easyui-linkbutton' iconCls='icon-remove' onclick='saveFun();'>保存</a>*@
+    @UserHelpers.ButtonForSave("saveFun()","save","style=display:none;")   
+    @*<a  id="update" href='javascript:void(0);' class='easyui-linkbutton' iconCls='icon-remove' onclick='updateFun();'>修改</a>*@
+    @UserHelpers.ButtonForUpdate("updateFun()","update") 
+    @* <a  id="cancel" href='javascript:void(0);' class='easyui-linkbutton' iconCls='icon-remove' onclick='cancelFun();'>取消</a>*@
+    @UserHelpers.ButtonForCancel("cancelFun()","cancel","style=display:none;") 
+    @* <a href='javascript:void(0);' class='easyui-linkbutton' iconCls='icon-remove' onclick='deleteFun();'>删除</a>*@
+    @* @UserHelpers.ButtonForDelete("deleteFun()","") *@
+    @if (Model == 1) { //拥有新建权限
+    @UserHelpers.ButtonForClose("CloseFun()")    
+}
+    <span style="width:100px;margin-right:10%">&nbsp;</span>
+</div>
+
+<div style="width:100%;margin:20px 0;">
+    <hr style="width:100%;color:#95B8E7"/>
+</div>
+<div style="width:100%;text-align:center;">
+    <h2>出库履历一览</h2>
+</div>
+
+<div style="width:100%;text-align:center;margin-bottom:12px;">
+    <div style="width:95%;margin:auto;text-align:left;">
+    <form class="Search_Form" id='searchForm' method='post'>
+         <table class='Search_Table'>
+                <tr>
+                <td>领料单号：</td>
+                <td>
+                <input id='PickListID' class="easyui-searchbox"style="width:100px"data-options="searcher:SearchBox,prompt:'',menu:'#mm'" name='PickListID'/>
+                </td>
+                     <td style="padding-left: 10px">请领单位：</td>
+                <td>
+                    <input id='CallinUnitID'class="easyui-searchbox" style="width:100px"data-options="searcher:SearchBox,prompt:'',menu:'#mm'"  name='CallinUnitID'/>
+                </td> 
+                <td style="padding-left: 10px">批次号：</td>
+                <td>
+                   <input id='BthID'class="easyui-searchbox" style="width:100px"data-options="searcher:SearchBox,prompt:'',menu:'#mm'"  name='BthID'/>
+                </td>
+                             
+                <td style="padding-left: 10px">出库日期：</td>
+                <td>
+                    <input id='StartOutDate'style="width:110px" type='text' class='easyui-datebox' name='StartInDate'/>
+                </td>
+                <td>
+                   ~<input id='EndOutDate'style="width:110px" type='text' class='easyui-datebox' name='EndInDate'/>
+                </td>
+                </tr>
+                <tr> 
+                <td>物资名称：</td>
+                <td>
+                    <input id='MaterielID'class="easyui-searchbox" style="width:100px"data-options="searcher:SearchBox,prompt:'',menu:'#mm'"  name='MaterielID'/>
+                </td>
+                <td style="padding-left: 10px">加工产品出库单：</td>
+                <td>
+                  <input id='SaeetID'class="easyui-searchbox" style="width:100px"data-options="searcher:SearchBox,prompt:'',menu:'#mm'"  name='SaeetID'/>
+                </td>
+                <td style="padding-left: 10px">规格型号：</td>
+                <td>
+                  <input id='PdtSpec'class="easyui-searchbox" style="width:100px"data-options="searcher:SearchBox,prompt:'',menu:'#mm'"  name='PdtSpec'/>
+                </td>
+                <td style="padding-left: 10px">仓库编码：</td>
+                <td>
+                  <input id='WhID'class="easyui-searchbox" style="width:100px"data-options="searcher:SearchBox,prompt:'',menu:'#mm'"  name='WhID'/>
+                </td>               
+                </tr>
+                <tr>  
+                <td>让步区分：</td>
+                <td>
+                   <select id='GiCls' name='GiCls'>
+                                        <option value='' selected>全部</option>
+                                        <option value='999'>正常</option>
+                                        <option value='0'>让步</option>
+                                        </select>
+                </td>
+                <td style="padding-left: 10px">入库区分：</td>
+                <td>
+                <input id="In" type="radio" checked="checked" value="出库" onclick='radioFun(id);' name="rangbu"/>出库&nbsp;&nbsp;&nbsp;<input id="move" type="radio" value="移库"  onclick='    radioFun(id);' name="rangbu"/>移库
+                </td>
+                <td style="padding-left: 10px"></td>
+                <td>                  
+                </td>
+                     <td>                  
+                </td>
+                     <td>                  
+                </td>
+                <td style="text-align: right">
+                    @UserHelpers.ButtonForSearch("searchFun()")
+                </td>
+                </tr>
+              </table>
+    </form>
+</div>
+</div>
+<div class="datagrid" style="text-align:center;width:100%;">
+    <table id="userTable"></table>
+</div>
+

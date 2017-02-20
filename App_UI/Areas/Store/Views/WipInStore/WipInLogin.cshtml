@@ -1,0 +1,281 @@
+﻿
+@*<link rel="stylesheet" href="~/Content/UserInfo/userInfo.css" />*@
+<link rel="stylesheet" href="~/Content/css/Store/WipStore.css">
+<script>
+    var tableName = "#userTable";//待修改
+    var formName = "#searchForm";//待修改
+    var endEditFlg = "";//结束编辑FLG
+
+
+    //保存功能
+    var saveInfos = function () {
+        $.messager.confirm("友情提示", "确认入库?", function (updateOK) {
+            if (updateOK) {
+                var row = $(tableName).datagrid('getRows');
+                if (row.length > 0) {
+                    //定义一个数组用于存放table中的数据
+                    var orderList = [];
+                    for (var i = 0 ; i < row.length; i++) {
+                        if (row[i].WipLoginFlg == "") {
+                            $(tableName).datagrid("endEdit", i);
+                            if (row[i].ProScrapQty != "" || row[i].Qty != "") {
+                                var order = {};
+                                order["RowIndex"] = i;
+                                order["PlanID"] = row[i].PlanID;
+                                order["DeliveryOrderID"] = row[i].DeliveryOrderID;
+                                order["ProcUnit"] = row[i].ProcUnit;
+                                order["BthID"] = row[i].BthID;
+                                order["McIsetInListID"] = row[i].McIsetInListID;
+                                order["IsetRepID"] = row[i].IsetRepID;
+                                order["GiCls"] = row[i].GiCls;
+                                order["PdtName"] = row[i].PdtName;
+                                order["PdtSpec"] = row[i].PdtSpec;
+                                order["TecnProcess"] = row[i].TecnProcess;
+                                order["Unit"] = row[i].Unit;
+                                order["PrchsUp"] = row[i].PrchsUp;
+                                order["NotaxAmt"] = row[i].NotaxAmt;
+                                order["Rmrs"] = row[i].Rmrs;
+                                order["Qty"] = row[i].Qty;
+                                order["ProScrapQty"] = row[i].ProScrapQty;
+                                order["ProMaterscrapQty"] = row[i].ProMaterscrapQty;
+                                order["ProOverQty"] = row[i].ProOverQty;
+                                order["ProLackQty"] = row[i].ProLackQty;
+                                order["ProTotalQty"] = row[i].ProTotalQty;
+                                order["OsSupProFlg"] = row[i].OsSupProFlg;
+
+                                //将order加进orderList
+                                orderList.push(order);
+                            } else {
+                                $.messager.alert("友情提示", "有数量没有填写！");
+                            }
+
+                        }
+                    }
+                    MymergeCells();
+                    $.ajax({
+                        async: true,
+                        url: "/Store/WipInStore/SaveWipInForLogin",
+                        data: { orderList: orderList },
+                        type: "post",
+                        success: function (data) {
+                            var _data = eval('(' + data + ')');
+                            if (_data.Result == true) {
+                                endEditFlg = "0";
+                                endEditInfons();//保存成功，结束编辑      
+                                MymergeCells();
+                                $.messager.alert("信息", _data.Message);
+                            } else {
+                                endEditFlg = "";
+                                $.messager.alert("信息", "保存失败！");
+                                //do something another...
+                            }
+                        }
+                    });
+                    console.info(rowData);
+                }
+            }
+            //MymergeCells();
+        });
+    }
+
+    //获取可编辑行
+    vareditorInfons = function () {
+        var row = $(tableName).datagrid('getRows');
+        if (row.length > 0) {
+            for (var i = 0 ; i < row.length; i++) {
+                if (row[i].WipLoginFlg == "" && endEditFlg == "") {
+                    $(tableName).datagrid("beginEdit", i);
+                }
+
+            }
+        }
+
+    }
+
+    //结束编辑行
+    endEditInfons = function () {
+        var row = $(tableName).datagrid('getRows');
+        if (row.length > 0) {
+            for (var i = 0 ; i < row.length; i++) {
+                if (row[i].WipLoginFlg == "") {
+                    $(tableName).datagrid("endEdit", i);
+                }
+            }
+        }
+    }
+
+    //取消编辑
+    var cancelInfos = function () {
+        editRow = undefined;
+        $(tableName).datagrid("rejectChanges");
+        $(tableName).datagrid("unselectAll");
+
+    }
+
+    //合并单元格
+    var merged = false;
+    var MymergeCells = function () {
+        setTimeout(function () {
+            if (!merged) {
+                mergeCells({ fields: ["PlanID", "DeliveryOrderID", "ProcUnit", "BthID", "McIsetInListID"], target: tableName });
+                merged = true;
+            } else {
+                merged = false;
+            }
+        }, 10);
+    }
+
+    //单选功能
+    function radioFun(value) {
+        alert(value + "单选功能");
+    }
+
+    //关闭窗体
+    function CloseFun() {
+        parent.closeTab()
+    }
+
+
+    var columns = [//["field","title",width,rowspan,colspan,sortable,editor,formatter(v,r,index){}]
+              [//第一行
+                  ["IsetRepID", "检验报告单号", 120, 2, null],
+                  ["GiCls", "让步区分", 80, 2, null, null, null, function (value, row, index) {
+                      var htmlStr = "";
+                      if (row.GiCls == "999") {
+                          htmlStr = "正常";
+                      } else {
+                          htmlStr = "内径过大";
+                      }
+                      return htmlStr;
+                  }],
+                  ["PdtName", "物资名称", 120, 2, null],
+                  ["PdtSpec", "规格型号", 220, 2, null],
+                  ["TecnProcess", "加工工艺", 200, 2, null],
+                  [null/*此处不要写字段名，null或空字符即可，否则会出错*/, "交仓数量", null, null, 6, true, function (value, row, index) { }],
+                  ["Unit", "单位", 40, 2, null],
+                  ["PrchsUp", "加工单价", null, 2, null, true, { type: "text" }, function (value, row, index) {
+                      return value;
+                  }],
+                  ["NotaxAmt", "金额", null, 2, null, true, true, function (value, row, index) {
+                      var notaxAmtValue = "";
+                      notaxAmtValue = row.Qty * row.PrchsUp
+                      row.NotaxAmt = notaxAmtValue
+                      return row.NotaxAmt;
+                  }],
+                  ["Rmrs", "备注", null, 2, null, true, { type: "text" }, function (value, row, index) {
+                      return value;
+                  }]
+              ], [//第二行
+                  ["Qty", "合格", null, null, null, true, { type: "text" }, function (value, row, index) {
+                      return value;
+                  }],
+                  ["ProScrapQty", "报废", null, null, null, true, { type: "text" }, function (value, row, index) {
+                      return value;
+                  }],
+                  ["ProMaterscrapQty", "料废", null, null, null, true, { type: "text" }, function (value, row, index) {
+                      return value;
+                  }],
+                  ["ProOverQty", "余料", null, null, null, true, { type: "text" }, function (value, row, index) {
+                      return value;
+                  }],
+                  ["ProLackQty", "缺料", null, null, null, true, { type: "text" }, function (value, row, index) {
+                      return value;
+                  }],
+                  ["ProTotalQty", "合计", null, true, true, true, { type: "text" }, function (value, row, index) {
+                      return value;
+                  }]
+                
+              ]
+    ]
+
+    $(function () {
+        var wipInLogin_deliveryOrderID = $("#WipInLogin_deliveryOrderID").val();
+        var wipInLogin_isetRepID = $("#WipInLogin_isetRepID").val();
+        Common.Functions.createDataGrid({//创建datagrid,详细内容参见functions.js
+            target: tableName,
+            url: "/Store/WipInStore/GetWipInLogin?deliveryOrderID=" + wipInLogin_deliveryOrderID + "&isetRepID=" + wipInLogin_isetRepID + "",
+            columns: columns,
+            frozenColumns: [[{ field: 'PlanID', title: '计划单号', width: 150, align: 'center', rowspan: 2 },
+                            { field: 'DeliveryOrderID', title: '送货单号', width: 150, align: 'center', rowspan: 2 },
+                            { field: 'ProcUnit', title: '加工单位', width: 160, align: 'center', rowspan: 2 },
+                            { field: 'BthID', title: '批次号', width: 110, align: 'center', rowspan: 2 },
+                            { field: 'McIsetInListID', title: '入库单号', width: 180, align: 'center', rowspan: 2 }
+        ]] ,
+            idField: "IsetRepID",
+            toolbar: $("#toolbar"),//工具栏 
+            nowrap: false,
+            //checkbox: true,//是否显示checkbox
+            maxWidth: 950,
+            maxHeight: 300,
+            onBeforeLoad: function (queryParams) {//可以添加一些额外参数,主要用于查询条件
+                var arr = $(formName).serializeArray();
+                $.each(arr, function () {
+                    queryParams[this.name] = this.value;
+                });
+            },
+            onLoadError: function () {
+                $.messager.alert("友情提示", "请求服务器失败，请刷新页面重试! "); 
+            },
+            onCreating: function (data) { 
+                MymergeCells();
+                //加载可编辑项
+                vareditorInfons();
+                //do something...
+            }
+            //,
+            //onAfterEdit: function (rowIndex, rowData, changes) {
+            //    //endEdit该方法触发此事件
+            //    $.ajax({
+            //        url: '/Store/WipInStore/Save',
+            //        type: 'POST',
+            //        data: { Id: rowData.Id,DeliverId:rowData.DeliverId, SupplierName: rowData.SupplierName, MatterName: rowData.MatterName,Aduser: rowData.Aduser, Uduser: rowData.Uduser },
+            //        //contentType: 'application/json;',
+            //        //dataType: 'json',
+            //        success: function (data) {                     
+            //            var _data = eval('(' + data + ')');
+            //            console.info(_data);
+            //            if (_data.result == true) {
+            //                $(tableName).datagrid("reload");
+            //            } else {
+            //                $.messager.alert("友情提示", "保存失败! " + data);
+            //                //do something another...
+            //            }
+            //        }
+            //    });
+            //    console.info(rowData);
+            //    editRow = undefined;
+
+            //}
+
+        });    
+   
+    });
+
+</script>
+
+<div class="buttons" style="width:100%;text-align:right;"><br />
+      @UserHelpers.ButtonForSave("saveInfos()")   
+      @UserHelpers.ButtonForClose("CloseFun()")  
+
+    <span style="width:100px;margin-right:10%">&nbsp;</span>
+</div>
+<div style="width:100%;margin:20px 0;">
+    <hr style="width:100%;color:#95B8E7"/>
+</div>
+<div style="width:100%;text-align:center;">
+    <h2>入库登录</h2>
+</div>
+
+<div class="datagrid" style="text-align:center;width:100%;">
+    <table id="userTable"></table>
+</div>
+<div id="toolbar" style='display:none'>
+    <form id='searchForm' method='post'>
+        <br/>
+        &nbsp;&nbsp;入库区分：<input id="In" type="radio" checked="checked" value="入库" onclick='radioFun(id);' name="rangbu"/>入库&nbsp;&nbsp;&nbsp;<input id="move" type="radio" value="移库"  onclick='    radioFun(id);' name="rangbu"/>移库<br />
+    </form>
+</div>
+<input id="WipInLogin_deliveryOrderID" type="hidden" value="@ViewBag.WipInLogin_deliveryOrderID" />
+<input id="WipInLogin_isetRepID" type="hidden" value="@ViewBag.WipInLogin_isetRepID" />
+
+

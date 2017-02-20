@@ -1,0 +1,175 @@
+﻿@{
+    ViewBag.Title = "Index";
+}
+
+<!--buttons-->
+<div class="buttons" style="width: 100%; text-align: right;">
+    <a href='javascript:void(0);' class='easyui-linkbutton' iconcls='icon-add' onclick='closeFun();'>关闭</a>
+    <span style="width: 100px; margin-right: 10%">&nbsp;</span>
+</div>
+<!--line-->
+<div style="width: 100%; margin: 20px 0;">
+    <hr style="width: 100%; color: #95B8E7" />
+</div>
+<!--content-->
+<div style="width: 100%; text-align: center; margin-bottom: 15px;">
+   
+</div>
+<div style="width: 100%; text-align: center; margin-bottom: 15px;">
+    <span id="mainTitle">在库待报废品一览</span>
+</div>
+<form id="processForm" method='post'>
+<div class="buttons" style="width: 88%; text-align: right; margin-bottom: 15px;">
+    <span>仓库:</span>
+    <select name="WareHouseID" id="WareHouseID">
+        <option value="1">分离单元附件库</option>
+        <option value="2">成品库</option>
+        <option value="3">半成品库</option>
+        <option value="4"></option>
+    </select>
+    <span><a href='javascript:void(0);' class='easyui-linkbutton' iconcls='icon-search' onclick='searchFun();'>查询</a></span>
+    <span><a href='javascript:void(0);' class='easyui-linkbutton' iconcls='icon-add' onclick='applicationFun();'>手工追加</a></span>
+</div>
+
+<div class="datagrid" style="margin-bottom: 15px;">
+    
+        <table id="IPPTable"></table>
+    
+
+</div>
+<div class="buttons" style="width: 88%; text-align: right; margin-bottom: 15px;">
+    <a class="easyui-linkbutton" iconcls='icon-add' id="btnchose" onclick='choseFun();'>申请</a>
+</div>
+    </form>
+@section head{
+    <link rel="stylesheet" href="~/Content/css/Store/ProductScrapped.css" />
+
+    <style>
+        #mainTitle
+        {
+            font-size: 18pt;
+        }
+    </style>
+    <script>
+        var form;  var table;
+        /*****************************查询************************************/
+        var searchFun = function () {
+            form.form("submit", {//form提交
+                url: "/Store/Discard/Get",//调用disardController里面的Get方法
+                onSubmit: function (param) {//除表单外的数据(分页)
+                    var pager = table.datagrid("getPager");
+                    var pagerOptions = $(pager).pagination("options");
+                    param.rows = pagerOptions.pageSize;
+                    param.page = 1;
+                },
+                success: function (data) {
+                    table.datagrid("loadData", eval('(' + data + ')'));//重新加载数据
+                }
+            });
+        };
+
+        /******************************查询end********************************/
+       
+
+        /****************************operations start**************************/
+        //
+        //手动追加跳转
+        var applicationFun = function (flg) {
+
+            parent.addTab("报废申请详细", "/Store/Discard/Creat");
+        };
+
+      
+
+        //取得选中行的主键（PartDtID），并跳转到详细页面
+        var choseFun = function () {
+            var row = $("#IPPTable").datagrid('getSelections');
+            if (row.length > 0)
+            {
+                var check = "";
+                var whId = row[0].WareHouseID;
+                var BthID = "";
+                for (var i = 0; i < row.length; i++) {
+                    check += row[i].PartDtID + ",";
+                    BthID += row[i].BthID + ",";
+                }
+                check = check.substring(0, check.length - 1);
+                BthID = BthID.substring(0, BthID.length - 1);
+                //跳转到详细页面
+                parent.addTab("报废申请详细", "/Store/Discard/ApplicationDetls?flg=0&pdtID=" + check + "&whId=" + whId + "&bthID=" + BthID);
+             }
+            else
+            {
+                $.messager.alert("友情提示", "请您选择要申请的数据");
+            }
+           
+        };
+        
+        /***********operations end***************/
+
+        //获得列属性
+        var getColumns = function () {
+            //列属性: field(字段名,非空) , title(列名) , width(默认80) , sortable(默认false) , editor(默认null) , formatter(默认-函数)
+            var _columns = [[
+                ["BthID", "", null,false],
+                ["PartAbbrevi", "物料编号", null, true],
+                ["PartDtName", "物料名称", 130, true],
+                ["PartDtSpec", "规格", null, true],
+                ["Quantity", "数量", 50, false],
+                ["StoreCls", "让步区分", 80, false],
+                ["WareHouseID", "仓库ID", null, false],
+                ["InDate", "入库日期", 130, false, { options: { model: "user" } }, function (value, row, index) {
+                    var date;
+                    var strDt = (value + "").replace(/\/Date\(/, "").replace(/\)\//, "");
+                    if (isNaN(strDt)) {
+                        date = strDt.ToDate();
+                    } else {
+                        date = new Date(strDt.ToInt());
+                    }
+                    var str = date.Format("yyyy-MM-dd");
+                    row.Addate = str;
+                    return str;
+                }],
+                ["PartDtID", "", null, true]
+
+            ]];
+
+            return _columns;
+        };
+
+       
+
+        $(function () {
+            table = $("#IPPTable");
+            form = $("#processForm");
+            Common.Functions.createDataGrid({//创建datagrid,详细内容参见functions.js
+                target: "#IPPTable",//table容器,必须
+                //url: "/Store/Discard/Get?id=" + "@ViewBag.id",//获取数据的地址,必须
+                columns: getColumns(),//列属性,必须
+                //idField: "UId",//标识字段
+                toolbar: $("#toolbar"),//工具栏 
+                checkbox: true,//是否显示checkbox
+                maxWidth: 668,//最大宽度
+                maxHeight: 300,//最大高度
+                onLoadError: function () {
+                    alert("请求服务器失败，请刷新页面重试!");
+                },
+                onCreating: function (data) {//数据成功加载
+                    //do something...
+                    
+                },
+                loadFilter: function (data) {
+                    var _data = {};
+                    _data.rows = isUndefined(data.rows) ? data : data.rows;
+                    _data.total = isUndefined(data.total) ? 5 : data.total;
+                    return _data;
+                }
+            });
+            //$(table).datagrid("loadData", getData());
+            $('#IPPTable').datagrid('hideColumn', 'BthID');
+            $('#IPPTable').datagrid('hideColumn', 'PartDtID');
+        });
+
+
+    </script>
+}

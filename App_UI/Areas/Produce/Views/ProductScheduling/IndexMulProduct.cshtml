@@ -1,0 +1,538 @@
+﻿@{
+    ViewBag.Title = "Index";
+}
+<link rel="stylesheet" type="text/css" href="~/Content/css/Produce/ProductScheduling.css" /> 
+    
+<!--style-->
+<style type="text/css">
+
+</style>
+
+<script>   
+    /*----按钮函数-------------------------------*/
+    //打印
+    var printFun = function () {
+      
+    };
+    var closeFun = function () {
+        parent.closeTab();
+    };
+   
+    //A.指定材料规格
+    var specifySpecification = function (MaterialName) {
+        $("#AttributeSelectDiv").dialog({
+            title:"属性指定",
+            cache: false,
+            height:240,
+            href: "/Produce/ProductScheduling/ShowAttribute",
+            modal: true,
+            width:330,
+            //事件
+            onClose: function () {
+                //alert($("#AttributeSelectDiv").datagrid("getSelections").length);
+                //alert($("#AttributeSelectDiv").datagrid("getSelections")[0]["SequenceNo"]);
+            }
+        });
+        $("#AttributeSelectDiv").dialog("open");
+        $("#AttributeSelectDiv").dialog("move", { top: 40 });
+        //绑定按钮事件
+        //$("#submitbtnAtt").on({
+        //    click:function(event)
+        //    {
+                
+        //        var strAtt = "";
+        //        for (i = 0; i < 5; i++) {
+        //            $("#AttrTable").datagrid("endEdit", i);
+        //        }
+        //        var rows = $("#AttrTable").datagrid("getRows");
+        //        for (i = 0; i < 5; i++) {
+        //            strAtt += rows[i].Detail+",";
+        //        }
+        //        //var txtobj = $(".validatebox-text");
+        //        //for (var i = 0; i < txtobj.length; i++) {
+        //        //    if ($.trim(txtobj[i].value())!="") {
+        //        //        strAtt += $.trim(txtobj[i].value());
+        //        //    }
+        //        //}
+        //        alert(strAtt);
+        //    }
+        //});//on
+    };
+    //属性提交
+    var submitbtnAtt = function () {
+        var strAtt = "";
+        for (i = 0; i < 5; i++) {
+            $("#AttrTable").datagrid("endEdit", i);
+        }
+        var rows = $("#AttrTable").datagrid("getRows");
+        for (i = 0; i < 5; i++) {
+            if ($.trim(rows[i].Detail) != "") {
+                strAtt += rows[i].Detail + ",";
+            }
+
+        }
+        //更新到属性框中
+        alert(strAtt);
+    }
+  
+    //B.查看正常库存明细
+    var detailOfQuantityInStoreNormal = function (MaterialName) {
+        //NormalStoreDiv
+        $("#NormalStoreDiv").dialog({
+            title: "正常库存",
+            cache: false,
+            height: 190,
+            href: "/Produce/ProductScheduling/NormalInStore",
+            modal: true,
+            width: 585,
+            //事件
+            onClose: function () {
+                //alert($("#NormalStoreTable").datagrid("getSelections").length);
+                //alert($("#NormalStoreTable").datagrid("getSelections")[0]["BatchID"]);
+            }
+        });
+        $("#NormalStoreDiv").dialog("open");
+        $("#NormalStoreDiv").dialog("move", { top: 40 });
+
+    };
+    //C.查看单配库存明细
+    var detailOfQuantityInStoreWithBadMatch = function (MaterialName) {
+        //AbnormalInStore
+        $("#AbnormalStoreDiv").dialog({
+            title: "单配库存",
+            cache: false,
+            height: 190,
+            href: "/Produce/ProductScheduling/AbNormalInStore",
+            modal: true,
+            width: 645,
+            //事件
+            onClose: function () {
+                ////alert($("#DialogProdInfoTable").datagrid("getSelections").length);
+                //alert($("#DialogProdInfoTable").datagrid("getSelections")[0]["ProductId"]);
+            }
+        });
+        $("#AbnormalStoreDiv").dialog("open");
+        $("#AbnormalStoreDiv").dialog("move", { top: 40 });
+    };
+
+    //dialog的退出
+    var dlgCancel = function (dlgID) {
+        $("#" + dlgID).dialog("close");
+    }
+
+    /*----库存单配dataGrid样式行为---------------*/
+    var gridData = [];//表格中的数据
+    var dataRows = 0;//数据的总行数
+    var lastProduct = "";//mouseenter事件触发前的产品名
+    //合并信息声明
+    var totModul = 0;//产品型号总数
+    var currentModel = "";//当前产品型号
+    var tottleMaterialNum = 0;//产品所具有的物料总数
+    var ProductNoMergeInfo = [];//格式化表格数组对
+
+    //订单信息
+    var scheduleSheetInfo = ["B130018-SBA", 1503, "2013-09-02"];
+
+    //校正物料子目录造成的rowcount偏差
+    function correctMergeRows(data) {
+        var i = 0;
+        var intPeModulEnd = 0;//每种产品物料的结束下标
+        var currentFatherID = 0;//当前物料行所属的父结点
+        for (j = 0; j < ProductNoMergeInfo.length; j++) {
+            intPeModulEnd = intPeModulEnd + ProductNoMergeInfo[j].MaterialNum;
+            for (; i < intPeModulEnd; i++) {
+                if (data[i]._parentId != 0) {//如果父结点不是根结点
+                    if (data[i]._parentId != currentFatherID) {//且其与上个结点的父结点不同
+                        currentFatherID = data[i]._parentId;
+                    } else {
+                        ProductNoMergeInfo[j].MaterialNum = ProductNoMergeInfo[j].MaterialNum - 1;
+                    }
+
+                };
+            };
+        };
+    }
+    //启动编辑
+    function beginEdit() {
+        var i = 1;
+        while (i <= dataRows) {
+            var ed = $("#treegrid").datagrid("getEditors", i);
+            //前四列开启编辑功能
+            for (j = 0; j < 4; j++) {
+                $(ed[j].target).removeAttr("readonly");
+                $(ed[j].target).css("background-color", "#ffffff");
+            };
+            i++;
+        };
+    };
+    //结束编辑
+    function endEdit() {
+        //totModul = 0;
+        //currentModel = "";
+        //tottleMaterialNum = 0;
+        //ProductNoMergeInfo = [];
+        //var i = 1;
+        //while (i <= dataRows) {
+        //    $("#treegrid").treegrid("endEdit", i++);//结束编辑时会触发数据重载,表头中的所有过程会重复执行
+        //};
+        //correctMergeRows(gridData);
+        //mergeCellsForTree();
+        var i = 1;
+        while (i<= dataRows) {
+            var ed = $("#treegrid").datagrid("getEditors", i);
+            //前四列关闭编辑功能
+            for (j = 0; j < 4; j++) {
+                $(ed[j].target).css("background-color", "gray");
+                $(ed[j].target).attr( "readOnly", "true");
+            };
+            i++;
+        };
+    };
+
+    //显示或隐藏排产列
+    var showOrHideColumn = function () {     
+        var fileds = ["OfferDate", "ProcessName", "TimeStandard", "TimeInPlan", "BeginDate"];
+        //查找按钮text来识别状态，暂未设置全局变量来控制
+        //点击下一步
+        if ($("#nextOrLastButton").text() == "下一步") 
+        {
+            for (var index in fileds) {
+                if (index <= 4) {
+                    $("#treegrid").treegrid("showColumn", fileds[index]);
+                };
+            };
+            $("#emptyTitle").text("备料工期");
+            $("#nextOrLastButton").find(".l-btn-text").text("上一步");
+            endEdit();
+            return;
+        };
+        //点击上一步
+        for (var index in fileds) {
+            if (index <= 4) {
+                $("#treegrid").treegrid("hideColumn", fileds[index]);
+            };
+        };
+        //因为备料工期是无filed的表头，隐藏后无法用easyUi的方法显示，所以需要在这一步清空其text防止干扰
+        $("#emptyTitle").text("");
+        $("#nextOrLastButton").find(".l-btn-text").text("下一步");
+        beginEdit();
+    };
+    
+    //(2)//----TreeGrid Construct////////////
+ 
+    //合并同样产品型号的产品行,并对合并后显示的单元格添加鼠标切换显示事件
+    function mergeCellsForTree() {
+        //首行拉伸，插入事件
+        for (i = 0; i < ProductNoMergeInfo.length; i++)
+        {
+            if (ProductNoMergeInfo[i].MaterialNum == 0) continue;
+            //合并
+            //alert(ProductNoMergeInfo[i].ProductModel +"      "+ ProductNoMergeInfo[i].MaterialNum);
+            $("." + ProductNoMergeInfo[i].ProductModel ).parents("td").attr("rowspan", ProductNoMergeInfo[i].MaterialNum);
+            //为首行产品格插入hover事件，显示订单信息
+            $("." + ProductNoMergeInfo[i].ProductModel ).parents("td").on({
+                mouseenter: function (event) {
+                    lastProduct = $(this).find("span").text();
+                    var strHtml = "<li><p><strong>计划单号：</strong></p><p>" + scheduleSheetInfo[0] + "</p></li>" +
+                                  "<li><p><strong>计划数量：</strong></p><p>" + scheduleSheetInfo[1] + "</p></li>" +
+                                  "<li><p><strong>计划交期：</strong></p><p>" + scheduleSheetInfo[2] + "</p></li>";
+                    $("." + lastProduct).html(strHtml);
+                },
+                mouseleave: function (event) {
+                    $(this).find("span").html(lastProduct);
+                }
+            });           
+        }
+        //隐藏其余行
+        $(".be-merge-cell" ).closest("td").attr("style", "display:none;");
+    };
+    //treeGrid的表头
+    var createColumnForTreeGrid = function () {
+        var _columns = [
+           [
+               {
+                   field: 'ProduceNo', title: '产品型号', rowspan: 2, width: 150, align: 'center', formatter: function (val, row, index) {
+                       //新产品
+                       if (val != currentModel) {
+                           totModul = totModul + 1;//新产品计数
+                           //1.将本产品加入数组中
+                           var modelInfo = { "ProductModel": val, "MaterialNum": 1 };
+                           //alert("insert  " + modelInfo.ProductModel + "  " + modelInfo.MaterialNum);
+                           ProductNoMergeInfo.push(modelInfo);
+
+                           //2.初始化本产品数据
+                           currentModel = val;
+                           tottleMaterialNum = 1;
+                           return "<span class='" + val + "'>" + val + "</span>";
+                       }
+
+                       tottleMaterialNum = tottleMaterialNum + 1;
+                       ProductNoMergeInfo[totModul-1].MaterialNum = tottleMaterialNum;//更新产品所具有的物料类数
+                       return "<span class='be-merge-cell'>" + val + "</span>";
+                   }
+               }, 
+               { field: 'MaterialName', title: '物料名称', rowspan: 2, width: 150 },
+               { field: 'Specification', title: '材料及规格要求', rowspan: 2, width: 120 },
+               { field: 'SpecificationBtn', title: '', rowspan: 2, width: 30, align:"center" },
+               { field: 'QuantityInSingle', title: '数量', rowspan: 2, width: 60 },
+               { field: '', title: '计划需求数量',colspan:2 , width: 120},
+               { field: '', title: '库存数量', colspan: 4, width: 200 },
+               { field: '', title: '锁库数量', colspan: 2, width: 60 },
+               { field: 'MaterialAdditional', title: '投料小计', rowspan: 2, width: 80 },
+               { field: '', title: '投料明细', colspan: 3, width: 60 },
+               //-----------------
+               { field: 'OfferDate', title: '提供日期', rowspan: 2 ,width:100,hidden:true},
+               { field: 'ProcessName', title: '工序名', rowspan: 2, width: 100, hidden: true },
+               { field: '', title: '<span id="emptyTitle"></span>', colspan: 2, width: 0, hidden: false},
+               { field: 'BeginDate', title: '启动日期', rowspan: 2, width: 100, hidden: true }
+           ],
+           [
+               { field: 'QuantityInPlanMin', title: '下限', width: 60},
+               { field: 'QuantityInPlanMax', title: '上限', width: 60 },
+
+               { field: 'NormalStore', title: '正常', width: 70 },
+               { field: 'NormalStoreBtn', title: '', width: 30, align: "center" },
+               { field: 'AbnormalStore', title: '正常', width: 70 },
+               { field: 'AbnormalStoreBtn', title: '', width: 30,align:"center" },
+
+               { field: 'QuantityInLockedNormal', title: '正常', width: 50, editor: 'text' },
+               { field: 'QuantityInLockedWithBadMatch', title: '单配', width: 50 },
+               { field: 'QuantityBySelfProcess', title: '自加工', width: 50, editor: 'text' },
+               { field: 'QuantityByOrder', title: '外购', width: 50, editor: 'text' },
+               { field: 'QuantityByBrotherFac', title: '外协', width: 50, editor: 'text' },
+               //-----------------
+               { field: 'TimeStandard', title: '标准', width: 50, hidden: true },
+               { field: 'TimeInPlan', title: '计划', width: 50, editor: 'text', hidden: true }
+
+           ]
+        ]
+        return _columns;
+    };
+   
+    var getDataForTreeGrid = function () {
+        var _data = [
+			{
+			    id: 1, ProduceNo: "RAT2002", MaterialName: 'RAT2002', SpecificationBtn: '', QuantityInSingle: 0, MaterialAdditional: 1492,
+			    QuantityInPlanMin: 1500, QuantityInPlanMax: 1500, NormalStore: 6, AbnormalStore: 2, QuantityInLockedNormal: 6, QuantityInLockedWithBadMatch: 6,
+			    QuantityBySelfProcess: 1492, QuantityByOrder: 0, QuantityByBrotherFac: "", OfferDate: '2013-8-30',ProcessName:'总装',TimeStandard:5.0, TimeInPlan:5.0,BeginDate:"/",_parentId: 0
+			}, {
+			    id: 2, ProduceNo: "RAT2002", MaterialName: '保持架', SpecificationBtn: "", QuantityInSingle: 1, MaterialAdditional: 1492,
+			    QuantityInPlanMin: 1500, QuantityInPlanMax: 1500, NormalStore: 6, AbnormalStore: 2, QuantityInLockedNormal: 6, QuantityInLockedWithBadMatch: 6,
+			    QuantityBySelfProcess: 1492, QuantityByOrder: 0, QuantityByBrotherFac: "", OfferDate: '2013-8-25', ProcessName: '外购', TimeStandard: 15.0, TimeInPlan: 0.0, BeginDate: "2013-8-25", _parentId: 0
+			}, {
+			    id: 3, ProduceNo: "RAT2002", MaterialName: '密封圈', SpecificationBtn: "", QuantityInSingle: 2, MaterialAdditional: 1492,
+			    QuantityInPlanMin: 1500, QuantityInPlanMax: 1500, NormalStore: 6, AbnormalStore: 2, QuantityInLockedNormal: 6, QuantityInLockedWithBadMatch: 6,
+			    QuantityBySelfProcess: 1492, QuantityByOrder: 0, QuantityByBrotherFac: "", OfferDate: '2013-8-25', ProcessName: '外购', TimeStandard: 15.0, TimeInPlan: 0.0, BeginDate: "2013-8-25", _parentId: 0
+			}, {
+			    id: 4, ProduceNo: "RAT2002", MaterialName: '座板', SpecificationBtn: "", QuantityInSingle: 1, MaterialAdditional: 1492,
+			    QuantityInPlanMin: 1500, QuantityInPlanMax: 1500, NormalStore: 6, AbnormalStore: 2, QuantityInLockedNormal: 6, QuantityInLockedWithBadMatch: 6,
+			    QuantityBySelfProcess: 1492, QuantityByOrder: 0, QuantityByBrotherFac: "", OfferDate: '2013-8-25', ProcessName: '外购', TimeStandard: 15.0, TimeInPlan: 0.0, BeginDate: "2013-8-25", _parentId: 0
+			}, {
+			    id: 5, ProduceNo: "RAT2002", MaterialName: '钢球', SpecificationBtn: "", QuantityInSingle: 10, MaterialAdditional: 1492,
+			    QuantityInPlanMin: 1500, QuantityInPlanMax: 1500, NormalStore: 6, AbnormalStore: 2, QuantityInLockedNormal: 6, QuantityInLockedWithBadMatch: 6,
+			    QuantityBySelfProcess: 1492, QuantityByOrder: 0, QuantityByBrotherFac: "", OfferDate: '2013-8-25', ProcessName: '外购', TimeStandard: 15.0, TimeInPlan: 0.0, BeginDate: "2013-8-25", _parentId: 0
+			}, {
+			    id: 6, ProduceNo: "RAT2002", MaterialName: '外圈', SpecificationBtn: "", QuantityInSingle: 1, MaterialAdditional: 1492,
+			    QuantityInPlanMin: 1500, QuantityInPlanMax: 1500, NormalStore: 6, AbnormalStore: 2, QuantityInLockedNormal: 6, QuantityInLockedWithBadMatch: 6,
+			    QuantityBySelfProcess: 1492, QuantityByOrder: 0, QuantityByBrotherFac: "", OfferDate: '2013-8-25', ProcessName: '磨加工', TimeStandard: 15.0, TimeInPlan: 0.0, BeginDate: "2013-8-25", _parentId: 0
+			}, {
+			    id: 7, ProduceNo: "RAT2002", MaterialName: '淬火件1', SpecificationBtn: "", QuantityInSingle: 1, MaterialAdditional: 1492,
+			    QuantityInPlanMin: 1500, QuantityInPlanMax: 1500, NormalStore: 6, AbnormalStore: 2, QuantityInLockedNormal: 6, QuantityInLockedWithBadMatch: 6,
+			    QuantityBySelfProcess: 1492, QuantityByOrder: 0, QuantityByBrotherFac: "", OfferDate: '2013-8-25', ProcessName: '淬火', TimeStandard: 15.0, TimeInPlan: 0.0, BeginDate: "2013-8-25", _parentId: 6
+			}, {
+			    id: 8, ProduceNo: "RAT2002", MaterialName: '冲孔件2', SpecificationBtn: "", QuantityInSingle: 1, MaterialAdditional: 1492,
+			    QuantityInPlanMin: 1500, QuantityInPlanMax: 1500, NormalStore: 6, AbnormalStore: 2, QuantityInLockedNormal: 6, QuantityInLockedWithBadMatch: 6,
+			    QuantityBySelfProcess: 1492, QuantityByOrder: 0, QuantityByBrotherFac: "", OfferDate: '2013-8-25', ProcessName: '冲孔', TimeStandard: 15.0, TimeInPlan: 0.0, BeginDate: "2013-8-25", _parentId: 6
+			}, {
+			    id: 9, ProduceNo: "RAT2002", MaterialName: '锻件3', SpecificationBtn: "", QuantityInSingle: 1, MaterialAdditional: 1492,
+			    QuantityInPlanMin: 1500, QuantityInPlanMax: 1500, NormalStore: 6, AbnormalStore: 2, QuantityInLockedNormal: 6, QuantityInLockedWithBadMatch: 6,
+			    QuantityBySelfProcess: 1492, QuantityByOrder: 0, QuantityByBrotherFac: "", OfferDate: '2013-8-25', ProcessName: '锻件', TimeStandard: 15.0, TimeInPlan: 0.0, BeginDate: "2013-8-25", _parentId: 6
+			}, {
+			    id: 10, ProduceNo: "RAT2002", MaterialName: '内圈', SpecificationBtn: "", QuantityInSingle: 1, MaterialAdditional: 1492,
+			    QuantityInPlanMin: 1500, QuantityInPlanMax: 1500, NormalStore: 6, AbnormalStore: 2, QuantityInLockedNormal: 6, QuantityInLockedWithBadMatch: 6,
+			    QuantityBySelfProcess: 1492, QuantityByOrder: 0, QuantityByBrotherFac: "", OfferDate: '2013-8-25', ProcessName: '磨加工', TimeStandard: 15.0, TimeInPlan: 0.0, BeginDate: "2013-8-25", _parentId: 0
+			}, {
+			    id: 11, ProduceNo: "RAT2002BT", MaterialName: '气缸', SpecificationBtn: "", QuantityInSingle: 1, MaterialAdditional: 1492,
+			    QuantityInPlanMin: 1500, QuantityInPlanMax: 1500, NormalStore: 6, AbnormalStore: 2, QuantityInLockedNormal: 6, QuantityInLockedWithBadMatch: 6,
+			    QuantityBySelfProcess: 1492, QuantityByOrder: 0, QuantityByBrotherFac: "", OfferDate: '2013-8-25', ProcessName: '锻件', TimeStandard: 15.0, TimeInPlan: 0.0, BeginDate: "2013-8-25", _parentId: 0
+			}, {
+			    id: 12, ProduceNo: "RAT2002BT", MaterialName: '点火栓', SpecificationBtn: "", QuantityInSingle: 1, MaterialAdditional: 1492,
+			    QuantityInPlanMin: 1500, QuantityInPlanMax: 1500, NormalStore: 6, AbnormalStore: 2, QuantityInLockedNormal: 6, QuantityInLockedWithBadMatch: 6,
+			    QuantityBySelfProcess: 1492, QuantityByOrder: 0, QuantityByBrotherFac: "", OfferDate: '2013-8-25', ProcessName: '磨加工', TimeStandard: 15.0, TimeInPlan: 0.0, BeginDate: "2013-8-25", _parentId: 11
+			}, {
+			    id: 13, ProduceNo: "RAT2002BT", MaterialName: '油嘴', SpecificationBtn: "", QuantityInSingle: 1, MaterialAdditional: 1492,
+			    QuantityInPlanMin: 1500, QuantityInPlanMax: 1500, NormalStore: 6, AbnormalStore: 2, QuantityInLockedNormal: 6, QuantityInLockedWithBadMatch: 6,
+			    QuantityBySelfProcess: 1492, QuantityByOrder: 0, QuantityByBrotherFac: "", OfferDate: '2013-8-25', ProcessName: '锻件', TimeStandard: 15.0, TimeInPlan: 0.0, BeginDate: "2013-8-25", _parentId: 11
+			}, {
+			    id: 14, ProduceNo: "RAT2002BT", MaterialName: '油封', SpecificationBtn: "", QuantityInSingle: 1, MaterialAdditional: 1492,
+			    QuantityInPlanMin: 1500, QuantityInPlanMax: 1500, NormalStore: 6, AbnormalStore: 2, QuantityInLockedNormal: 6, QuantityInLockedWithBadMatch: 6,
+			    QuantityBySelfProcess: 1492, QuantityByOrder: 0, QuantityByBrotherFac: "", OfferDate: '2013-8-25', ProcessName: '磨加工', TimeStandard: 15.0, TimeInPlan: 0.0, BeginDate: "2013-8-25", _parentId: 11
+			}, {
+			    id: 15, ProduceNo: "RAT2002BT", MaterialName: '密封圈', SpecificationBtn: "", QuantityInSingle: 1, MaterialAdditional: 1492,
+			    QuantityInPlanMin: 1500, QuantityInPlanMax: 1500, NormalStore: 6, AbnormalStore: 2, QuantityInLockedNormal: 6, QuantityInLockedWithBadMatch: 6,
+			    QuantityBySelfProcess: 1492, QuantityByOrder: 0, QuantityByBrotherFac: "", OfferDate: '2013-8-25', ProcessName: '锻件', TimeStandard: 15.0, TimeInPlan: 0.0, BeginDate: "2013-8-25", _parentId: 0
+			}, {
+			    id: 16, ProduceNo: "RAT2002BT", MaterialName: '五号螺母', SpecificationBtn: "", QuantityInSingle: 1, MaterialAdditional: 1492,
+			    QuantityInPlanMin: 1500, QuantityInPlanMax: 1500, NormalStore: 6, AbnormalStore: 2, QuantityInLockedNormal: 6, QuantityInLockedWithBadMatch: 6,
+			    QuantityBySelfProcess: 1492, QuantityByOrder: 0, QuantityByBrotherFac: "", OfferDate: '2013-8-25', ProcessName: '锻件', TimeStandard: 15.0, TimeInPlan: 0.0, BeginDate: "2013-8-25", _parentId: 0
+			}, {
+			    id: 17, ProduceNo: "RAT2002BT", MaterialName: '锻件X', SpecificationBtn: "", QuantityInSingle: 1, MaterialAdditional: 1492,
+			    QuantityInPlanMin: 1500, QuantityInPlanMax: 1500, NormalStore: 6, AbnormalStore: 2, QuantityInLockedNormal: 6, QuantityInLockedWithBadMatch: 6,
+			    QuantityBySelfProcess: 1492, QuantityByOrder: 0, QuantityByBrotherFac: "", OfferDate: '2013-8-25', ProcessName: '锻件', TimeStandard: 15.0, TimeInPlan: 0.0, BeginDate: "2013-8-25", _parentId: 0
+			}
+        ];
+        dataRows = _data.length;
+        return _data;
+    };
+
+    /*页面初始化*/
+    var getChanges = function () {
+        console.info(changesData);
+    }
+
+    var changesData = [];//编辑产生的数据改变
+    var preRowId = null;//上一次点击的行的id(data的id)
+
+    $(function () {
+
+        var _data = getDataForTreeGrid();
+        //单元格内添加按钮
+        for (var x in _data) {
+            _data[x]["SpecificationBtn"] = '<button type="button" class="columnButton" onclick=specifySpecification("' + _data[x]["MaterialName"] + '");></button>';
+            _data[x]["NormalStoreBtn"] = '<button type="button" class="columnButton" onclick=detailOfQuantityInStoreNormal("' + _data[x]["MaterialName"] + '");></button>';
+            _data[x]["AbnormalStoreBtn"] = '<button type="button" class="columnButton" onclick=detailOfQuantityInStoreWithBadMatch("' + _data[x]["MaterialName"] + '");></button>';
+        }
+
+        $("#treegrid").treegrid({
+            idField: 'id',
+            treeField: 'MaterialName',
+            animate: true,
+            showFooter: false,//是否显示页脚
+            collapsible: false,
+            width: 1000, height: 450,
+            columns: createColumnForTreeGrid(),
+            //格式化数据
+            loadFilter: function (data, parentId) {
+                var d = {};
+                d.rows = data;
+                return d;
+            },
+  
+            pagination: true,
+            pageSize: 10,
+            pageList: [10, 20],
+            //修改后
+            onAfterEdit: function (row, changes) {
+                var oldRecord = changesData.GetById(row.id, "id");
+                var obj = {};
+                var notNull = false;//标识是否有值改变
+                var numFieldChanged = false;//标识num列有没有改变
+                for (var c in changes) {
+                    notNull = true;
+                    eval(("obj." + c + "='" + row[c] + "';"));
+                    if (c == "num") {
+                        numFieldChanged = true;
+                    }
+                }
+                if (notNull) {//有值改变
+                    obj.id = row.id;
+                    if (!oldRecord) {//新对象，原数组内找不到(按主键查找)
+                        changesData.push(obj);
+                    } else {//原数组内可以找到
+                        oldRecord = $.extend(oldRecord, obj);
+                    }
+                    if (numFieldChanged) {
+                        var footerRow = $("#treegrid").treegrid("getFooterRows")[0];
+                        var sum = 0;
+                        for (var i = 0; i < _data.length; i++) {
+                            sum += (_data[i].num - 0);
+                        }
+                        footerRow.num = sum;
+                        $(this).treegrid("reloadFooter");
+                    }
+                }
+            }
+        })
+        //加载数据
+        $("#treegrid").treegrid("loadData", _data);
+        //校正二级子结点带来的行数偏差
+        gridData = _data;
+        correctMergeRows(_data);
+        //格式化
+        mergeCellsForTree();
+        //开启编辑行（此方法引起界面重绘，耗时很长，秒级）
+        var ic = 1;
+        while (ic <= dataRows) {
+            $("#treegrid").treegrid("beginEdit", ic++);
+        };       
+    });
+
+    //按主键查找，参数：值，主键的名称(如"userId"，可省略，默认为"id")
+    Array.prototype.GetById = function (value) {
+        if (this.length == 0) {
+            return null;
+        }
+        var value = arguments[0];//值
+        var idName = arguments[1] ? arguments[1] : "id";//主键名
+        for (var i = 0; i < this.length; i++) {
+            if (eval("this[" + i + "]." + idName + "==" + value)) {
+                return this[i];
+            }
+        }
+        return null;
+    }
+</script>
+
+<!--buttons-->
+<div class="buttons" style="width:100%;text-align:right;">  
+    <span style="width:100px;">
+        <a class="easyui-linkbutton" iconCls='icon-add' onclick='capacityAnalyze();'>产能分析</a>
+        <a class="easyui-linkbutton" iconCls='icon-add' onclick='ganttChat();'>查看甘特图</a>
+        <a class="easyui-linkbutton" iconCls='icon-undo' onclick='schedulingDisenable();'>排产解除</a>
+        <a class="easyui-linkbutton" iconCls='icon-add' onclick='schedulingEnable();'>确认排产</a>
+        <a class="easyui-linkbutton" iconCls='icon-print' onclick='printFun();'>打印</a>
+        <a href='javascript:void(0);' class='easyui-linkbutton' iconCls='icon-cancel' onclick='closeFun();'>关闭</a>
+    </span>
+</div>
+<!--line-->
+<div style="width:100%;margin:20px 0;"> 
+    <hr style="width:100%;color:#95B8E7"/>
+</div>
+<!--content-->
+<div style="width:100%;text-align:center;">
+    <h2>订单产品排产</h2>
+</div>
+<div style="width:100%;text-align:center;">
+    <div style="width:85%;margin:auto;text-align:right;">
+        <form id="processForm">
+            <div>    
+                <a id="nextOrLastButton" class="easyui-linkbutton" onclick="showOrHideColumn();">下一步</a>
+                <a class="easyui-linkbutton" onclick="save();">保存</a>
+            </div>
+        </form>
+    </div>
+</div>
+<div id="schedulingTreegrid" style="width:100%;height:350px; text-align:center;" class="datagrid"> 
+   <table id="treegrid" class="easyui-treegrid"/>
+</div>
+
+<!--AttributeSelectDialog-->
+<div class="easyui-dialog" id="AttributeSelectDiv" closed="true" data-options="buttons:'#buttonAtt',modal:true"></div>
+<div id="buttonAtt">
+    <a id="submitbtnAtt" class="easyui-linkbutton" onclick="submitbtnAtt()">确定</a>
+    <a href="#" class="easyui-linkbutton" onclick="dlgCancel('AttributeSelectDiv')">取消</a>
+</div>
+
+<!--AttributeSelectDialog-->
+<div class="easyui-dialog" id="NormalStoreDiv" closed="true" data-options="buttons:'#buttonNormal',modal:true"></div>
+<div id="buttonNormal">
+    <a id="submitbtnNormal" href="#" class="easyui-linkbutton">确定</a>
+    <a href="#" class="easyui-linkbutton" onclick="dlgCancel('NormalStoreDiv')">取消</a>
+</div>
+
+<!--AttributeSelectDialog-->
+<div class="easyui-dialog" id="AbnormalStoreDiv" closed="true" data-options="buttons:'#buttonAbnormal',modal:true"></div>
+<div id="buttonAbnormal">
+    <a id="submitbtnAbnormal" href="#" class="easyui-linkbutton">确定</a>
+    <a href="#" class="easyui-linkbutton" onclick="dlgCancel('AbnormalStoreDiv')">取消</a>
+</div>

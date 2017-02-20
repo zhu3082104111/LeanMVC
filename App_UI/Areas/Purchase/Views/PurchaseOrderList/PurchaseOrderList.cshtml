@@ -1,0 +1,75 @@
+﻿@using App_UI.Resource.ViewText.Common
+@using App_UI.Resource.ViewText.Purchase
+@using Model
+<script type="text/javascript" src="~/Scripts/common/dialog.js"></script>
+<script src="~/Scripts/purchase/PurchaseOrderList.js" type="text/javascript"></script>
+
+<!--按钮部分-->
+<div class="FunctionButton_Area" style="width:100%;text-align:right;">
+    @UserHelpers.ButtonForAdd("create()")
+    @UserHelpers.ButtonForDelete("deleteFun()")
+    @UserHelpers.ButtonForSanction("approve()")
+    @UserHelpers.ButtonForExamine("review()")
+    @UserHelpers.ButtonForClose("parent.closeTab(gTitle)")
+    <span style="width: 100px; margin-right: 5%">&nbsp;</span>
+</div>
+<!--分割线-->
+@UserHelpers.Line()
+<!-- 页面标题 -->
+<div style="text-align:center;font-size:20px;">
+    @UserHelpers.Title(@VT_PurchaseOrderList.IndexTitle)
+</div><br/>
+
+<!-- 搜索块 -->
+<div style="width: 100%; text-align: center; margin-bottom: 15px;">
+    <div style="width: 95%; margin: auto; text-align: left;">
+        <form id="searchForm" class="Search_Form" method="post">
+            <table id ="search_table" style="margin:auto;text-align:left;">
+                <tr>
+                    <td>@VT_PurchaseOrderList.CustomerOrder：</td>
+                    <td>@UserHelpers.Input("CustomerOrder")</td>
+                    <td style="padding-left: 20px">@VT_PurchaseOrderList.OutOrderID：</td>
+                    <td>@UserHelpers.Input("OutOrderID")</td>
+                    <td style="padding-left: 20px">@VT_PurchaseOrderList.EstablishUID：</td>
+                    <td>@UserHelpers.Input("UName")</td>
+                    <td style="padding-left: 20px">@VT_PurchaseOrderList.UrgentStatus：</td>
+                    <td style="padding-left: 20px">@UserHelpers.SelectWidget(Constant.MasterSection.URGENT_STATE,"UrgentStatus","UrgentStatus")</td>
+                </tr>
+                <tr>
+                    <td>@VT_PurchaseOrderList.CompName：</td>
+                    <td colspan="3" style ="text-align :left">
+                        @UserHelpers.Input("OutCompanyName","ShowCompInfoScreen();")
+                        <input type="hidden" id="OutCompanyID" name="OutCompanyID"/>
+                    </td>
+                    <td style="padding-left: 20px">@VT_PurchaseOrderList.EstablishDate：</td>
+                    <td colspan="3" style ="text-align :left">
+                        @UserHelpers.TimeInput("EstablishDateS")&nbsp;&nbsp;~&nbsp;&nbsp;@UserHelpers.TimeInput("EstablishDateE")
+                    </td>
+                </tr>
+                <tr>
+                    <td>@VT_PurchaseOrderList.DepartmentID：</td>
+                    <td>@UserHelpers.SelectWidget(Constant.MasterSection.DEPT, "DepartmentID", "DepartmentID")</td>
+                    <td style="padding-left: 20px">@VT_PurchaseOrderList.OutOrderStatus：</td>
+                    <td>@UserHelpers.SelectWidget(Constant.MasterSection.ODR_STATE,"OutOrderStatus","OutOrderStatus")</td>
+                    <td style="padding-left: 20px">@VT_PurchaseOrderList.ApproveDate：</td>
+                    <td colspan="3" style ="text-align :left">
+                        @UserHelpers.TimeInput("ApproveDateS")&nbsp;&nbsp;~&nbsp;&nbsp;@UserHelpers.TimeInput("ApproveDateE")
+                        &nbsp;&nbsp;@UserHelpers.ButtonForSearch("searchInfo()")
+                    </td>
+                </tr>
+            </table>
+        </form>
+    </div>
+    <div class="datagrid" style="text-align:center;width:100%;">
+        <table id="purchaseOrderListTable" ></table>
+    </div>
+</div>
+
+<!-- *************************************************************** 子查询画面START ******************************************************** -->
+<!-- 供货商选择对话框 -->
+<div class="easyui-dialog" id="CompSelectDiv" closed="true" data-options="buttons:'#companySelect',modal:true"></div>
+<div id="companySelect">
+    @UserHelpers.ButtonForChoose("SelCompAndCloseDialogFun('OutCompanyID', 'OutCompanyName', '0', 'CompSelectDiv')")
+    @UserHelpers.ButtonForClose("CloseDialogFun('CompSelectDiv')")
+</div>
+<!-- *************************************************************** 子查询画面END ******************************************************** -->

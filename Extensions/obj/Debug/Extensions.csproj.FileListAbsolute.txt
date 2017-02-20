@@ -1,0 +1,11 @@
+D:\雷迪克\SVN_LDK_ERP\Extensions\bin\Debug\Helpers.dll
+D:\雷迪克\SVN_LDK_ERP\Extensions\bin\Debug\Helpers.pdb
+D:\雷迪克\SVN_LDK_ERP\Extensions\bin\Debug\Autofac.dll
+D:\雷迪克\SVN_LDK_ERP\Extensions\bin\Debug\Autofac.Integration.Mvc.dll
+D:\雷迪克\SVN_LDK_ERP\Extensions\bin\Debug\Autofac.xml
+D:\雷迪克\SVN_LDK_ERP\Extensions\bin\Debug\Autofac.Integration.Mvc.xml
+D:\雷迪克\SVN_LDK_ERP\Extensions\obj\Debug\Extensions.lang.resources
+D:\雷迪克\SVN_LDK_ERP\Extensions\obj\Debug\Extensions.csproj.GenerateResource.Cache
+D:\雷迪克\SVN_LDK_ERP\Extensions\obj\Debug\Helpers.dll
+D:\雷迪克\SVN_LDK_ERP\Extensions\obj\Debug\Helpers.pdb
+D:\雷迪克\SVN_LDK_ERP\Extensions\obj\Debug\Extensions.csprojResolveAssemblyReference.cache

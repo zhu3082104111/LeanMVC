@@ -1,0 +1,12 @@
+﻿.datagrid > div {
+    margin: auto;
+}
+
+.searchspan {
+    display: inline-block;
+    width: 90px;
+}
+
+a {
+    color: blue;
+}

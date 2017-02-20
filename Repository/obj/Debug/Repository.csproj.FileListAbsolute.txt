@@ -1,0 +1,17 @@
+D:\雷迪克\SVN_LDK_ERP\Repository\bin\Debug\Repository.dll.config
+D:\雷迪克\SVN_LDK_ERP\Repository\bin\Debug\Repository.dll
+D:\雷迪克\SVN_LDK_ERP\Repository\bin\Debug\Repository.pdb
+D:\雷迪克\SVN_LDK_ERP\Repository\bin\Debug\Autofac.dll
+D:\雷迪克\SVN_LDK_ERP\Repository\bin\Debug\Autofac.Integration.Mvc.dll
+D:\雷迪克\SVN_LDK_ERP\Repository\bin\Debug\EntityFramework.dll
+D:\雷迪克\SVN_LDK_ERP\Repository\bin\Debug\Helpers.dll
+D:\雷迪克\SVN_LDK_ERP\Repository\bin\Debug\Model.dll
+D:\雷迪克\SVN_LDK_ERP\Repository\bin\Debug\Helpers.pdb
+D:\雷迪克\SVN_LDK_ERP\Repository\bin\Debug\Model.pdb
+D:\雷迪克\SVN_LDK_ERP\Repository\bin\Debug\Autofac.xml
+D:\雷迪克\SVN_LDK_ERP\Repository\bin\Debug\Autofac.Integration.Mvc.xml
+D:\雷迪克\SVN_LDK_ERP\Repository\bin\Debug\EntityFramework.xml
+D:\雷迪克\SVN_LDK_ERP\Repository\bin\Debug\zh-Hans\EntityFramework.resources.dll
+D:\雷迪克\SVN_LDK_ERP\Repository\obj\Debug\Repository.csprojResolveAssemblyReference.cache
+D:\雷迪克\SVN_LDK_ERP\Repository\obj\Debug\Repository.dll
+D:\雷迪克\SVN_LDK_ERP\Repository\obj\Debug\Repository.pdb

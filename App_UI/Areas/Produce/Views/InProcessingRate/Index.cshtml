@@ -1,0 +1,250 @@
+﻿@{
+    ViewBag.Title = "内部加工进度统计";
+}
+@section head{
+    <link rel="stylesheet" href="~/Content/css/Produce/FAScheduleBill.css" />
+
+    <script>
+        //防止mergeCells和onCreating反复调用造成死循环
+        var firstMerge = 0;
+
+        //搜索功能
+        var searchFun = function () {
+            $("#searchForm").form("submit", {
+                //form提交
+                url: "/Produce/InProcessingRate/GetData",
+                onSubmit: function (param) { //除表单外的数据(分页)
+                    var pager = $("#tabStatistics").datagrid("getPager");
+                    var pagerOptions = $(pager).pagination("options");
+                    param.rows = pagerOptions.pageSize;
+                    param.page = 1;
+                },
+                success: function (data) {
+                    firstMerge = 0;
+                    $("#tabStatistics").datagrid("loadData", eval('(' + data + ')')); //重新加载数据
+                }
+            });
+        };
+
+        //关闭当前标签
+        var closeFun = function () {
+            parent.closeTab();
+        };
+
+        //模拟数据
+        var getDatas = function () {
+            var data = [{
+                ClientOrderID: "000",
+                ProduceID: "332",
+                PlanNumber: "2",
+                PlannedDelivery: "2",
+                MaterialName: "1",
+                ProcessName: "34",
+                StartTime: "123",
+                EndTime: "234",
+                AssemblyNum: "56",
+                ActualNum: "33",
+                AchievementRate: ""
+            },
+                {
+                    ClientOrderID: "000",
+                    ProduceID: "332",
+                    PlanNumber: "2",
+                    PlannedDelivery: "2",
+                    MaterialName: "2",
+                    ProcessName: "34",
+                    StartTime: "123",
+                    EndTime: "234",
+                    AssemblyNum: "56",
+                    ActualNum: "34",
+                    AchievementRate: ""
+                }
+            ];
+            return data;
+        };
+
+        //列属性:field(字段,非空) ,title(列名,非空),width(默认80),sortable(默认false),editor(默认null),formatter(默认-函数)
+        //["field","title",width,rowspan,colspan,sortable,editor,formatter(v,r,index){}]
+        var columns = [[
+                ["ClientOrderID", "客户订单号", 100, 2, null, false, null, function (value, row, index) {
+                    return '<span style="color:red;">' + value + '</span>';
+                }],
+                ["ProduceID", "产品型号", 100, 2, null, false],
+                ["PlanNumber", "计划数量", 100, 2, null, false],
+                ["PlannedDelivery", "计划交期", 100, 2, null, false, null, function (value, row, index) {
+                    var date;
+                    var strDt = (value + "").replace(/\/Date\(/, "").replace(/\)\//, "");
+                    if (isNaN(strDt)) {
+                        date = strDt.ToDate();
+                    } else {
+                        date = new Date(strDt.ToInt());
+                    }
+                    var str = date.Format("yyyy/MM/dd");
+                    row.Addate = str;
+                    return str;
+                }],
+                ["MaterialName", "物料名称", 100, 2, null, false],
+                ["ProcessName", "工序名称", 100, 2, null, false],
+                [null, "计划日期", 200, null, 2],
+                [null, "数量", 200, null, 2],
+                ["AchievementRate", "达成率", 100, 2, null, false, null, function (value, row, index) {
+                    //var rate = (parseInt(row.ActualNum) / parseInt(row.AssemblyNum)).toFixed(2) * 100;
+                    var rate = value * 100;
+                    return rate.toString() + "%";
+                }]
+        ], [
+                ["StartTime", "开始", 100, null, null, false, null, function (value, row, index) {
+                    var date;
+                    var strDt = (value + "").replace(/\/Date\(/, "").replace(/\)\//, "");
+                    if (isNaN(strDt)) {
+                        date = strDt.ToDate();
+                    } else {
+                        date = new Date(strDt.ToInt());
+                    }
+                    var str = date.Format("yyyy/MM/dd");
+                    row.Addate = str;
+                    return str;
+                }],
+                ["EndTime", "结束", 100, null, null, false, null, function (value, row, index) {
+                    var date;
+                    var strDt = (value + "").replace(/\/Date\(/, "").replace(/\)\//, "");
+                    if (isNaN(strDt)) {
+                        date = strDt.ToDate();
+                    } else {
+                        date = new Date(strDt.ToInt());
+                    }
+                    var str = date.Format("yyyy/MM/dd");
+                    row.Addate = str;
+                    return str;
+                }],
+                ["AssemblyNum", "需求", 100],
+                ["ActualNum", "完成", 100]
+        ]];
+
+
+
+        $(function () {
+            Common.Functions.createDataGrid({
+                //创建datagrid,详细内容参见functions.js
+                target: "#tabStatistics",//table容器,必须
+                url: "",//获取数据的地址,必须
+                columns: columns,//列属性,必须
+                //idField: "OrderNo",//标识字段
+                //toolbar: $("#toolbar"),//工具栏
+                //checkbox: true,//是否显示checkbox
+                maxWidth: 1200,//最大宽度
+                maxHeight: 200,//最大高度
+                //pageSize: 10,
+                //pageList: [5, 10, 20, 30],
+                onBeforeLoad: function (queryParams) { //可以添加一些额外参数,主要用于查询条件
+                    var arr = $("#searchForm").serializeArray();
+                    $.each(arr, function () {
+                        queryParams[this.name] = this.value;
+                    });
+                },
+                onLoadError: function () {
+                    alert("请求服务器失败，请刷新页面重试!");
+                },
+                onCreating: function (data) { //数据成功加载
+                    //do something...
+                    firstMerge = firstMerge + 1;
+                    if (firstMerge == 1) {
+                        setTimeout(function () {
+                            mergeCells({ fields: ["ClientOrderID", "ProduceID", "PlanNumber", "PlannedDelivery"], target: $("#tabStatistics") });
+                        }, 10);
+                    }
+                },
+                onLoadSuccess: function () {
+                },
+                onSortColumn: function (sort, order) {
+
+                }
+            });
+
+            $("#btnSearch").bind('click', searchFun);
+            $("#btnClose").bind('click', closeFun);
+            //$("#tabStatistics").datagrid("loadData", {
+            //    rows: getDatas(), total: 5
+            //});
+            //mergeCells({ fields: ["ClientOrderNum", "ProduceID", "PlanNumber", "PlannedDelivery"], target: $("#tabStatistics") });
+
+        });
+
+
+
+    </script>
+}
+<div class="buttons" style="width: 100%; text-align: right;">
+    <a id="btnDelete" class="easyui-linkbutton" iconcls="icon-cancel" onclick="">关闭</a>
+    <span style="width: 100px; margin-right: 10%">&nbsp;</span>
+</div>
+
+<div style="width: 100%; margin: 20px 0;">
+    <hr style="width: 100%; color: #95B8E7" />
+</div>
+
+<div style="width: 100%; text-align: center; font-size: 18px">
+    杭州雷迪克汽车部件制造有限公司
+</div>
+
+<div style="width: 100%; text-align: center;">
+    <h2>内部加工进度统计</h2>
+</div>
+
+<div style="width: 100%; text-align: center;">
+    <div id="toolbar" style="width: 1000px; margin: auto;">
+        <form id="searchForm" method="post">
+            <div class="table">
+                <div class="row">
+                    <div>客户订单号：</div>
+                    <div>
+                        <input id="txtClientOrderID" name="txtClientOrderID" type="text" class="easyui-validatebox txtWidth" />
+                    </div>
+                    <div>产品型号：</div>
+                    <div>
+                        <input id="txtProductID" name="txtProductID" type="text" class="easyui-validatebox txtWidth" />
+                    </div>
+                    <div>开始时间：</div>
+                    <div>
+                        <input id="txtStartTime" name="txtStartTime" type="text" class="easyui-datebox txtDateWidth" />
+                        ~
+                        <input id="txtEndTime" name="txtEndTime" type="text" class="easyui-datebox txtDateWidth" />
+                    </div>
+                    <div>物料型号：</div>
+                    <div>
+                        <input id="txtMaterialType" name="txtMaterialType" type="text" class="easyui-validatebox txtDateWidth" name="txtDateFrom" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div>工序：</div>
+                    <div>
+                        <input id="txtProcess" name="txtProcess" type="text" class="easyui-validatebox txtWidth" />
+                    </div>
+                    <div>生产单元：</div>
+                    <div>
+                        @*                        <select id="txtProductionUnits" name="txtProductionUnits">
+                            <option value="" selected>全部</option>
+                            <option value="1">涨紧轮单元</option>
+                            <option value="0">分离单元</option>
+                        </select>*@
+                        <input id="txtProductionUnits" name="txtProductionUnits" class="easyui-combobox" style="width: 100px;" value="2"
+                            data-options="valueField:'id',textField:'name',url1:'',panelHeight:'auto',editable:false,
+                        data:[{id:'0',name:'全部'},{id:'1',name:'涨紧轮单元'},{id:'2',name:'分离单元'}],value:'1'" />
+                    </div>
+                    <div>计划交期：</div>
+                    <div>
+                        <input id="txtPlanDeliveryFrom" name="txtTeam" type="text" class="easyui-datebox txtDateWidth" />
+                        ~
+                        <input id="txtPlanDeliveryTo" name="txtTeam" type="text" class="easyui-datebox txtDateWidth" />
+
+                    </div>
+                    <div><a id="btnSearch" class="easyui-linkbutton" iconcls="icon-search" href="javascript:void(0);" onclick="">查询</a></div>
+                    <div></div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<div class="datagrid" style="text-align: center; width: 100%;">
+    <table id="tabStatistics"></table>
+</div>

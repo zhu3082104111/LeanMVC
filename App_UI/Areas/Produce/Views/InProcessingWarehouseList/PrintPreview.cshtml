@@ -1,0 +1,183 @@
+﻿@using App_UI.Resource.ClientMessage
+@using App_UI.Resource.ViewText.Common
+@using App_UI.Resource.ViewText.Produce
+@using Model
+@model Model.VM_ProcessDelivery
+@{
+    ViewBag.Title = "加工交仓单打印预览";
+}
+@section head
+{
+    <style>
+        table.firstTable td {
+            width: 300px;
+        }
+
+        table.secondTable td {
+            width: 300px;
+        }
+
+        div.datagrid div.datagrid-body td {
+            height: 30px;
+        }
+
+        div.datagrid div.datagrid-cell {
+            height: auto;
+        }
+    </style>
+
+
+    <script>
+        
+        //刷新加工交仓单一览界面的表格
+        var refreshProProWarTable = function() {
+            //for (var i = 0; i < parent.frames.length; i++) {
+            //    parent.frames[i].$("#proProWarTable").datagrid("reload");
+            //};
+            //防止用户将一览页面关闭造成无法找到对象
+            if (parent.frames["InProcessingWarehouseListIndex"] != undefined) {
+                parent.frames["InProcessingWarehouseListIndex"].$("#proProWarTable").datagrid("reload");
+            }
+        };
+
+        //关闭当前标签
+        var closeFun = function() {
+            refreshProProWarTable();
+            parent.closeTab();
+        };
+
+        (function($) {
+            var table = "#tabProProWarDet";
+
+            var getColumns = function() {
+                //["field", "title", "width", "rowspan", "colspan", "sortable", "editor", "formatter"]
+                var columns = [[], []];
+                columns[0].push(["PartName", "@VT_InProcessingWarehouseList.ProductName", 120, 2, 1]);
+                columns[0].push(["ProcessName", "@VT_InProcessingWarehouseList.ProcessName", 100, 2, 1]);
+                columns[0].push(["UnitName", "@VT_InProcessingWarehouseList.UnitName", 50, 2]);
+                columns[0].push(["", "@VT_InProcessingWarehouseList.WarehQtySubmitted", null, 1, 6]);
+                columns[0].push(["Remark", "@VT_InProcessingWarehouseList.Remark", 120, 2]);
+
+                columns[1].push(["QualifiedQuantity", "@VT_InProcessingWarehouseList.QualifiedQuantity", 60]);
+                columns[1].push(["ScrapQuantity", "@VT_InProcessingWarehouseList.ScrapQuantity", 60]);
+                columns[1].push(["WasteQuantity", "@VT_InProcessingWarehouseList.WasteQuantity", 60]);
+                columns[1].push(["ExcessQuantity", "@VT_InProcessingWarehouseList.ExcessQuantity", 60]);
+                columns[1].push(["LackQuantity", "@VT_InProcessingWarehouseList.LackQuantity", 60]);
+                columns[1].push(["PlanTotal", "@VT_InProcessingWarehouseList.PlanTotal", 60]);
+                return columns;
+            };
+
+            $(function() {
+                Common.Functions.createDataGrid({
+                    target: table,
+                    url: "/Produce/InProcessingWarehouseList/GetProDelDet?procDelivID=" + "@ViewBag.procDelivID",
+                    columns: getColumns(),
+                    //checkbox: false,
+                    pagination: false,
+                    sortName: "",
+                    sortOrder: "",//默认排序
+                    maxWidth: 1030,//最大宽度
+                    maxHeight: 600,//最大高 度
+                    loadFilter: function(data) {
+                        var _data = {};
+                        _data.rows = data.rows ? data.rows : data;
+                        _data.total = 0;
+                        return _data;
+                    }
+                });
+                //$(table).datagrid("loadData", [{
+                //    f1: "RAC2046/内圈", f2: "磨加工", f3: "只", f4: "1030", f10: 1030
+                //}, {}, {}]);
+
+                //绑定按钮事件
+                $("#btnClose").bind('click', closeFun);
+                $("#btnPrint").bind('click', function () { self.print(); });
+                
+                if ('@Model.ConcessionPart' == "1") {
+                    $("#txtConcessionPartD").html("@VT_InProcessingWarehouseList.Yes");
+                } else {
+                    $("#txtConcessionPartD").html("@VT_InProcessingWarehouseList.No");
+                }
+
+            });
+
+        }(jQuery));
+
+    </script>
+
+}
+
+
+<div class="buttons noprint" style="width: 100%; text-align: right; margin-top: 10px;">
+    @UserHelpers.ButtonForPrint("", "btnPrint")
+    @UserHelpers.ButtonForClose("", "btnClose")
+</div>
+
+@UserHelpers.Line()
+@UserHelpers.Company_Title(VT_Common.CompanyName)
+@UserHelpers.Title(VT_InProcessingWarehouseList.IIndexTitleDetail)
+<br/>
+
+<div style="width: 100%;">
+    <div style="text-align: center; margin-bottom: 5px;">
+        <div style="width: 750px; margin: auto;">
+            <table class="firstTable">
+                <tr style="text-align: left;">
+                    <td></td>
+                    <td></td>
+                    <td>
+                        <div style="width: 200px; height: 100px; background-color: #8fbc8f; margin-left: 50px; text-align: center;">
+                            <img />
+                            <div style="padding-top: 40px;">条形码</div>
+                        </div>
+                    </td>
+                </tr>
+                <tr style="text-align: left;">
+                    <td></td>
+                    <td></td>
+                    <td>
+                        <div style="margin-left: 50px">@VT_InProcessingWarehouseList.ProcDelivIDD：<span id="">@Model.ProcDelivID</span></div>
+                    </td>
+                </tr>
+                <tr style="text-align: left;">
+                    <td>
+                        <div>@VT_InProcessingWarehouseList.DepartName：<span id="">@Model.DepartName</span></div>
+                    </td>
+                    <td>
+                        <div>
+                            @VT_InProcessingWarehouseList.ConcessionPartD：<span id="txtConcessionPartD"></span>
+                        </div>
+                    </td>
+                    <td>
+                        <div style="margin-left: 50px">
+                            @VT_InProcessingWarehouseList.BillDate：<span id="date">@Model.BillDate</span>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <div class="datagrid">
+        <table id="tabProProWarDet"></table>
+    </div>
+
+
+    <div style="margin-top: 5px;">
+        <table class="secondTable" style="margin: auto; width: 650px;">
+            <tr>
+                <td>
+                    <div>@VT_InProcessingWarehouseList.QualityInspector：<span id=""></span></div>
+                </td>
+                <td>
+                    <div>@VT_InProcessingWarehouseList.Managers：<span id=""></span></div>
+                </td>
+                <td>
+                    <div>@VT_InProcessingWarehouseList.WarehKprName：<span id="">@Model.WarehKprName</span></div>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+
+

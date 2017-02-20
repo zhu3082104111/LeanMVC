@@ -1,0 +1,198 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="SMSG_STORE_E00001" xml:space="preserve">
+    <value>第{0}行的数据仓库预约详细表里不存在，请重新输入！</value>
+  </data>
+  <data name="SMSG_STORE_E000010" xml:space="preserve">
+    <value>第{0}行的检验单号输入不合法，请您输入正确的检验单号</value>
+  </data>
+  <data name="SMSG_STORE_E000011" xml:space="preserve">
+    <value>第{0}行的物料编号输入不合法，请您输入正确的物料编号</value>
+  </data>
+  <data name="SMSG_STORE_E000012" xml:space="preserve">
+    <value>第{0}行的合格数量输入不合法，请您输入正确的合格数量</value>
+  </data>
+  <data name="SMSG_STORE_E000013" xml:space="preserve">
+    <value>第{0}行的每箱数量输入不合法，请您输入正确的每箱数量</value>
+  </data>
+  <data name="SMSG_STORE_E000014" xml:space="preserve">
+    <value>第{0}行的箱数输入不合法，请您输入正确的箱数</value>
+  </data>
+  <data name="SMSG_STORE_E000015" xml:space="preserve">
+    <value>第{0}行的零头输入不合法，请您输入正确的零头</value>
+  </data>
+  <data name="SMSG_STORE_E000016" xml:space="preserve">
+    <value>成品交仓单号不存在，请您输入正确的成品交仓单号</value>
+  </data>
+  <data name="SMSG_STORE_E000017" xml:space="preserve">
+    <value>批次号不存在，请您输入正确的批次号</value>
+  </data>
+  <data name="SMSG_STORE_E000018" xml:space="preserve">
+    <value>第{0}行的计划单号不存在，请您输入正确的计划单号</value>
+  </data>
+  <data name="SMSG_STORE_E000019" xml:space="preserve">
+    <value>第{0}行的检验单号不存在，请您输入正确的检验单号</value>
+  </data>
+  <data name="SMSG_STORE_E00002" xml:space="preserve">
+    <value>成品交仓单号未输入，请您输入正确的成品交仓单号</value>
+  </data>
+  <data name="SMSG_STORE_E000020" xml:space="preserve">
+    <value>第{0}行的物料编号不存在，请您输入正确的物料编号</value>
+  </data>
+  <data name="SMSG_STORE_E000021" xml:space="preserve">
+    <value>第{0}行的交仓详细数据不存在，请您输入正确的数据</value>
+  </data>
+  <data name="SMSG_STORE_E000022" xml:space="preserve">
+    <value>第{0}行的合格数量未输入，请您输入正确的合格数量</value>
+  </data>
+  <data name="SMSG_STORE_E000023" xml:space="preserve">
+    <value>第{0}行的每箱数量未输入，请您输入正确的每箱数量</value>
+  </data>
+  <data name="SMSG_STORE_E000024" xml:space="preserve">
+    <value>第{0}行的箱数未输入，请您输入正确的箱数</value>
+  </data>
+  <data name="SMSG_STORE_E000025" xml:space="preserve">
+    <value>第{0}行的零头未输入，请您输入正确的零头</value>
+  </data>
+  <data name="SMSG_STORE_E00003" xml:space="preserve">
+    <value>批次号未输入，请您输入正确的批次号</value>
+  </data>
+  <data name="SMSG_STORE_E00004" xml:space="preserve">
+    <value>第{0}行的计划单号未输入，请您输入正确的计划单号</value>
+  </data>
+  <data name="SMSG_STORE_E00005" xml:space="preserve">
+    <value>第{0}行的检验单号未输入，请您输入正确的检验单号</value>
+  </data>
+  <data name="SMSG_STORE_E00006" xml:space="preserve">
+    <value>第{0}行的物料编号未输入，请您输入正确的物料编号</value>
+  </data>
+  <data name="SMSG_STORE_E00007" xml:space="preserve">
+    <value>成品交仓单号输入不合法，请您输入正确的成品交仓单号</value>
+  </data>
+  <data name="SMSG_STORE_E00008" xml:space="preserve">
+    <value>批次号输入不合法，请您输入正确的批次号</value>
+  </data>
+  <data name="SMSG_STORE_E00009" xml:space="preserve">
+    <value>第{0}行的计划单号输入不合法，请您输入正确的计划单号</value>
+  </data>
+  <data name="SMSG_STORE_E10001" xml:space="preserve">
+    <value>批次别库存表中不存在此条数据</value>
+  </data>
+</root>

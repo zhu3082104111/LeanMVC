@@ -1,0 +1,28 @@
+﻿@model System.Collections.Specialized.NameValueCollection
+<table>
+    <tr class="ui-widget-header">
+        <th>名称
+        </th>
+        <th>值
+        </th>
+        <th>
+            @lang.Edit
+        </th>
+    </tr>
+    @foreach (string item in Model.Keys)
+    {
+        <tr>
+            <td>
+                @item
+            </td>
+            <td>
+                @Model[item]
+            </td>
+            <td>
+                <div style="text-align: center">
+                    @Ajax.ActionLink(lang.Edit, "Edit", new { id = item }, new AjaxOptions { UpdateTargetId = "Main", HttpMethod = "Get" })
+                </div>
+            </td>
+        </tr>
+    }
+</table>

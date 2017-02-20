@@ -1,0 +1,464 @@
+﻿<link rel="stylesheet" href="~/Content/css/Store/WipStore.css">
+<script>
+
+    var tableName = "#userTable";//待修改
+    var tableNametoBthSelect = "#userTabletoBthSelect";//待修改
+    var formName = "#searchForm";//待修改
+    var form4Add = "#form4Add";
+   
+    var rowIndex = 0;//保存出库登录画面哪一行
+    var bthId = "";//根据批次来判定有没有指定批次
+    var selectOrderList = [];  //记录批次别选择画面选择的数据集合
+
+    var pickListId = "";  //记录领料单号
+    var materReqDetailNO = "";  //记录领料单详细号
+
+    //保存功能
+    var saveInfos = function (rowIndex, rowData, changes) {
+        $.messager.confirm("友情提示", "确认出库?", function (updateOK) {
+            if (updateOK) {
+                    var row = $(tableName).datagrid('getRows');
+                    if (row.length > 0) {
+                        //定义一个数组用于存放table中的数据
+                        var orderList = [];
+                        for (var i = 0 ; i < row.length; i++) {
+                            if (row[i].Qty != 0) {
+                                $(tableName).datagrid("endEdit", i);
+                                    var order = {};
+                                    order["RowIndex"] = i;
+                                    order["PickListID"] = row[i].PickListID;
+                                    order["SaeetID"] = row[i].SaeetID;
+                                    order["CallinUnitID"] = row[i].CallinUnitID;
+                                    order["MaterielID"] = row[i].MaterielID;
+                                    order["TecnProcess"] = row[i].TecnProcess;
+                                    order["Qty"] = row[i].Qty;
+                                    order["Unit"] = row[i].Unit;
+                                    order["SellPrc"] = row[i].SellPrc;
+                                    order["NotaxAmt"] = row[i].NotaxAmt;
+                                    order["OutDate"] = row[i].OutDate;
+                                    order["Rmrs"] = row[i].Rmrs;
+                                    order["PdtSpec"] = row[i].PdtSpec;
+                                    order["GiCls"] = row[i].GiCls;
+                                    order["OsSupProFlg"] = row[i].OsSupProFlg;
+                                    order["MaterReqDetailNo"] = row[i].MaterReqDetailNo;
+                                    //将order加进orderList
+                                    orderList.push(order);
+                            }
+                        }
+                        MymergeCells1();
+                        $.ajax({
+                            async: true,
+                            url: "/Store/WipOutStore/SaveWipOutForLogin",
+                            data: {
+                                orderList: orderList,
+                                selectOrderList : selectOrderList
+                            },
+                            type: "post",
+                            success: function (data) {
+                                var _data = eval('(' + data + ')');
+                                if (_data.Result == true) {
+                                    $.messager.alert("信息","保存成功！");
+                                    $("#Quty").attr("disabled", true);
+                                    $(tableName).datagrid("reload");
+                                } else {
+                                    //title：显示在标题面板的标题文本;msg：提示框显示的消息文本;icon：提示框显示的图标,可用的值是：
+                                    //error, question, info, warning; fn：当窗口关闭时触发的回调函数
+                                    $.messager.alert("信息", _data.Message, "info", function () {
+                                        //开启编辑
+                                        vareditorInfons();
+                                    });
+                                    
+                                    //do something another...
+                                }
+                            }
+                        });
+                        console.info(rowData);
+                    }
+                }
+            MymergeCells1();
+        });
+    }
+
+    //获取可编辑行Table1
+    vareditorInfons = function () {
+        var row = $(tableName).datagrid('getRows');
+        if (row.length > 0) {
+            for (var i = 0 ; i < row.length; i++) {
+                    $(tableName).datagrid("beginEdit", i);
+            }
+        }
+    }
+
+    //table2获取可编辑行
+    vareditorInfon = function () {
+        var row = $(tableNametoBthSelect).datagrid('getRows');
+        if (row.length > 0) {
+            for (var i = 0 ; i < row.length; i++) {
+                if (row[i].PdtSpec != "") {
+                    $(tableNametoBthSelect).datagrid("beginEdit", i);
+                }
+
+            }
+        }
+    }
+
+    //table2关闭编辑
+    varendeditorInfon = function () {
+        var row = $(tableNametoBthSelect).datagrid('getRows');
+        if (row.length > 0) {
+            for (var i = 0 ; i < row.length; i++) {
+                if (row[i].PdtSpec != "") {
+                    $(tableNametoBthSelect).datagrid("endEdit", i);
+                }
+
+            }
+        }
+    }
+
+    //批次别选择画面有指定批次时设置复选框状态
+    PageFlag = function () {
+
+        $("#check").attr("disabled", true);
+        $("#check").attr("checked", true);
+        }
+ 
+    //出库登录画面数量点击事件
+    var Click = function (qtyValue, pdtID,pickListID,materReqDetailNo,osSupProFlg,BthID,index) {
+        //初始化弹出窗体
+        rowIndex = index;
+        bthId = BthID;
+        pickListId = pickListID;  //记录领料单号
+        materReqDetailNO = materReqDetailNo;  //记录领料单详细号
+        saveQty(qtyValue, pdtID, pickListID, materReqDetailNo, osSupProFlg, BthID);
+       
+        var dialog = $("#dlg");
+        var form = $(form4Add);
+        form.form("clear");
+        dialog.find("div.ftitle").text("出库批次选择画面"); //修改dialog标题
+        dialog.dialog({ modal: true }).dialog("open"); //模式化打开dialog
+       
+    }
+
+    //确定按钮
+    var ensure = function () {
+        var checkBox = $(".checkBoxs");
+        var rows = $(tableName).datagrid('getRows');
+        var row = $(tableNametoBthSelect).datagrid('getRows');
+        var orderList = [];
+        var TotalQty = 0;
+        var checkQty = 0;
+        var userFlg = 0;
+        var sellPrc = "";
+        var notaxAmt = 0;
+        //如果指定批次
+        if (bthId != "") {
+            for (var i = 0; i < checkBox.length; i++) {
+                var c = checkBox[i];
+
+                if (i == checkBox.length - 1) {
+                    sellPrc += row[i].SellPrc;
+                }
+                else {
+                    sellPrc += row[i].SellPrc + ",";
+                }
+                notaxAmt += row[i].SellPrc * row[i].UserQty;
+                TotalQty += Number(row[i].UserQty);
+            }
+
+            $(tableName).datagrid('getRows')[rowIndex]['Qty'] = TotalQty;
+            $(tableName).datagrid('getRows')[rowIndex]['SellPrc'] = sellPrc;
+            $(tableName).datagrid('getRows')[rowIndex]['NotaxAmt'] = notaxAmt;
+            $(tableName).datagrid("refreshColumn", "Qty");
+            $(tableName).datagrid("refreshColumn", "SellPrc");
+            $(tableName).datagrid("refreshColumn", "NotaxAmt");
+            $("#dlg").dialog("close");
+        }
+        else {
+            $.messager.confirm("友情提示", "确认选择?", function (updateOK) {
+                if (updateOK) {
+
+                    for (var i = 0; i < checkBox.length; i++) {
+                        var c = checkBox[i];
+                        if (c.checked) {
+                            checkQty += 1;
+                            $(tableNametoBthSelect).datagrid("endEdit", i);
+
+                            if (row[i].UseableQty < row[i].UserQty) {
+                                userFlg = 1;
+                                rowindex = i;
+                            }
+
+                            if (row[i].UserQty != 0 || row[i].UserQty != "") {
+                                var order = {};
+                                order["RowIndex"] = rowIndex;
+                                order["BthID"] = row[i].BthID;
+                                order["UserQty"] = row[i].UserQty;
+                                order["SellPrc"] = row[i].SellPrc;
+                                order["WipLoginPriceFlg"] = row[i].WipLoginPriceFlg;
+                                order["PickListID"] = pickListId;
+                                order["MaterReqDetailNo"] = materReqDetailNO;
+                                //将order加进selectOrderList
+                                if (i == checkBox.length - 1) {
+                                    sellPrc += row[i].SellPrc;
+                                }
+                                else {
+                                    sellPrc += row[i].SellPrc + ",";
+                                }
+                                notaxAmt += row[i].SellPrc * row[i].UserQty;
+                                selectOrderList.push(order);
+                                TotalQty += Number(row[i].UserQty);
+                            }
+
+                        }
+                    }
+
+                    if (checkQty == 0) {
+                        alert("请进行批次选择！")
+                        vareditorInfon();
+                        MymergeCells2();
+                    }
+                    else if (userFlg == 1) {
+                        alert("第" + rowindex + "行使用数量不可大于可用数量，请重新选择！")
+                        vareditorInfon();
+                        MymergeCells2();
+                    }
+                    else {
+                        if (TotalQty != row[0].Qty) {
+                            alert("所选数量必须等于请领数量，请重新输入！");
+                            vareditorInfon();
+                            MymergeCells2();
+                        }
+                        else {
+                            $(tableName).datagrid('getRows')[rowIndex]['Qty'] = TotalQty;
+                            $(tableName).datagrid('getRows')[rowIndex]['SellPrc'] = sellPrc;
+                            $(tableName).datagrid('getRows')[rowIndex]['NotaxAmt'] = notaxAmt;
+                            $(tableName).datagrid("refreshColumn", "Qty");
+                            $(tableName).datagrid("refreshColumn", "SellPrc");
+                            $(tableName).datagrid("refreshColumn", "NotaxAmt");
+
+                            $("#dlg").dialog("close");
+                        }
+                    }
+                    userFlg = 0;
+                }
+            });
+        }
+        
+    }
+
+    //关闭窗口
+    var closedlg = function () {
+
+        $("#dlg").dialog("close");
+    }
+
+    //合并单元格1
+    var merged = false;
+    var MymergeCells1 = function () {
+        setTimeout(function () {
+            if (!merged) {
+                mergeCells({ fields: ["PickListID", "SaeetID", "CallinUnitID"], target: tableName });
+                merged = true;
+            } else {
+                merged = false;
+            }
+        }, 10);
+    }
+
+    //合并单元格2
+    var mergedtoBthSelect = false;
+    var MymergeCells2 = function () {
+        setTimeout(function () {
+            if (!mergedtoBthSelect) {
+                mergeCells({ fields: ["Qty"], target: tableNametoBthSelect });
+                mergedtoBthSelect = true;
+            } else {
+                mergedtoBthSelect = false;
+            }
+        }, 10);
+    }
+
+    var mergedtoBthSelect = false;
+    function saveQty(qtyValue, pdtID, pickListID, materReqDetailNo, osSupProFlg, BthID) {
+    //第二张表格（批次别选择画面）
+    Common.Functions.createDataGrid({//创建datagrid,详细内容参见functions.js
+        target: tableNametoBthSelect,
+        url: "/Store/WipOutStore/WipOutBthSelect?qty=" + qtyValue + "&pdtID=" + pdtID + "&pickListID="+pickListID+"&materReqDetailNo="+materReqDetailNo+"&osSupProFlg="+osSupProFlg+"",
+        columns: columnstoBthSelect,
+        idField: "BthID",
+        maxWidth: 950,
+        maxHeight: 300,
+        pagination: true,
+        onBeforeLoad: function (queryParams) {//可以添加一些额外参数,主要用于查询条件
+            var arr = $(formName).serializeArray();
+            $.each(arr, function () {
+                queryParams[this.name] = this.value;
+            });
+        },
+        onLoadError: function () {
+            $.messager.alert("友情提示", "请求服务器失败，请刷新页面重试! ");
+        },
+        onCreating: function (data) {
+           
+            //if (data.length > 1) {
+                MymergeCells2();
+            //}
+            if (BthID == "") {
+                vareditorInfon();
+                $("#check").attr("disabled", false);
+            }
+            else {
+                PageFlag();
+                varendeditorInfon();
+            }
+            //do something...
+        }
+    });
+
+    }
+    
+    //出库登录画面
+    var columns = [[//["field","title",width,rowspan,colspan,sortable,editor,formatter(v,r,index){} 
+       ["MaterReqDetailNo", "领料单详细号", 100, null, null, false],
+       ["MaterielName", "物资名称", 100, null, null, false],
+       ["TecnProcess", "加工工艺", 100, null, null, false],
+       ["CallinQty", "请领数量", 100, null, null, false],
+       ["Qty", "数量", 100, true, null, function (value, row, index) {
+           var htmlStr = "";
+           htmlStr = ("<input type='text' id='Quty' style='font-size:2px width:5px' align:'center' readonly='true' onclick=\"" + "Click('" + row.CallinQty + "','" + row.MaterielID + "','" + row.PickListID + "','" + row.MaterReqDetailNo + "','" + row.OsSupProFlg + "','" + row.BthID + "','" + index + "')\"  value='" + value + "'\">");
+           return htmlStr;
+       }],
+       ["Unit", "单位", 100, null, null, false],
+       ["SellPrc", "出库单价", 100, true, null],
+       ["NotaxAmt", "金额", 100, true, true, function (value, row, index) {          
+           return value ;
+       }], 
+       ["OutDate", "出库日期", 120, true, true, function (value, row, index) {
+           var date;
+           var strDt = (value + "").replace(/\/Date\(/, "").replace(/\)\//, "");
+           if (isNaN(strDt)) {
+               date = strDt.ToDate();
+           } else {
+               date = new Date(strDt.ToInt());
+           }
+           var str = date.Format("yyyy-MM-dd");
+           row.Paydate = str;
+           return str;
+       }],
+      ["Rmrs", "备注", 100, true, { type: "text" }, function (value, row, index) {
+          return value;
+      }]
+      ]];
+    
+    //弹出窗口（批次别选择画面）
+    var columnstoBthSelect = [[//["field","title",width,rowspan,colspan,sortable,editor,formatter(v,r,index){} 
+     ["Qty", "数量", 80, null, null, false],
+     ["BthID", "批次号", 170, null, null, false],
+     ["GiCls", "让步区分", 120, null, null, false],
+     ["PdtSpec", "规格型号", 100, null, null, false],
+     ["UseableQty", "可用数量", 100, true, null, function (value, row, index) {
+         if (row.UseableQty == 0) {
+             return "";
+         }
+         else {
+             row.UseableQty = value;
+             return row.UseableQty;
+         }
+         
+     }],
+     ["SellPrc", "单价", 70, true, true],
+     ["UserQty", "使用数量", 90, true, { type: "text" }, function (value, row, index) {
+         row.UserQty = value;
+         return row.UserQty;
+     }],
+    ["select", "选择", 80, true, true, function (value, row, index) {
+        var htmlStr = "";
+        htmlStr = ("<input class='checkBoxs' id='check' type='checkbox' style='font-size:12px'  value='选择'>");
+        return htmlStr;
+    }]
+
+    ]];
+
+    var merged = false;
+    $(function () {
+        var wipOutLogin_pickListID = $("#WipOutLogin_pickListID").val();
+        var wipOutLogin_materielID = $("#WipOutLogin_materielID").val();
+        var wipOutLogin_materReqDetailNo = $("#WipOutLogin_materReqDetailNo").val();
+        Common.Functions.createDataGrid({//创建datagrid,详细内容参见functions.js
+            target: tableName,
+            url: "/Store/WipOutStore/GetWipOutLogin?pickListID=" + wipOutLogin_pickListID + "&materielID=" + wipOutLogin_materielID + "&materReqDetailNo="+wipOutLogin_materReqDetailNo+"",
+            columns: columns,
+            frozenColumns: [[{ field: 'PickListID', title: '领料单', width: 140, align: 'center', rowspan: 2 },
+                            { field: 'SaeetID', title: '加工产品出库单', align: 'center', width: 140, rowspan: 2 },
+                            { field: 'CallinUnitID', title: '请领单位', width: 180, align: 'center', rowspan: 2 },
+        ]] ,
+            toolbar: $("#toolbar"),//工具栏 
+            maxWidth: 950,
+            maxHeight: 200,
+            pagination: false,
+            onBeforeLoad: function (queryParams) {//可以添加一些额外参数,主要用于查询条件
+                var arr = $(formName).serializeArray();
+                $.each(arr, function () {
+                    queryParams[this.name] = this.value;
+                });
+            },
+            onClickRow: function (rowIndex, rowData) {
+                
+                return false;
+            },
+            onLoadError: function () {
+                $.messager.alert("友情提示", "请求服务器失败，请刷新页面重试! "); 
+            },
+            onCreating: function (data) {
+
+                if (data.length > 1) {
+                    MymergeCells1();
+                }
+                vareditorInfons();
+                //do something...
+            }
+        });
+    });
+
+
+
+</script>
+
+<div class="buttons" style="width:100%;text-align:right;"><br /><br />
+    <a href='javascript:void(0);' class='easyui-linkbutton' iconCls='icon-save' onclick='saveInfos();'>保存</a>
+    <a class="easyui-linkbutton" iconCls='icon-cancel' onclick='parent.closeTab(gTitle);'>关闭</a>
+
+    <span style="width:100px;margin-right:10%">&nbsp;</span>
+</div>
+<div style="width:100%;margin:20px 0;">
+    <hr style="width:100%;color:#95B8E7"/>
+</div>
+<div style="width:100%;text-align:center;">
+    <h2>出库登录</h2><br />
+</div>
+
+<div class="datagrid" style="text-align:center;width:100%;">
+    <table id="userTable"></table>
+</div>
+<div id="toolbar" style='display:none'>
+    <form id='searchForm' method='post'>
+        <br/>
+        &nbsp;&nbsp;出库区分：<input id="In" type="radio" checked="checked" value="出库" onclick='radioFun(id);' name="rangbu"/>出库&nbsp;&nbsp;&nbsp;<input id="move" type="radio" value="移库"  onclick='    radioFun(id);' name="rangbu"/>移库<br />
+    </form>
+</div>
+<div id="dlg" title="出库批次选择画面" class="easyui-dialog" closed="true" style="width:960px;height:400px;" buttons="#formAddBtn">
+    <div class="ftitle">出库批次选择画面</div>
+    <form id="form4Add" method="post">
+       <div class="datagrid" style="text-align:center;width:100%;">
+    <table id="userTabletoBthSelect"></table>
+</div> 
+    </form>
+</div>
+<div id="formAddBtn">
+    <a href="javascript:void(0);" class="easyui-linkbutton" iconCls="icon-reset" onclick="closedlg();">关闭</a>
+    <a href="javascript:void(0);" class="easyui-linkbutton" id="ensure" iconCls="icon-ok" onclick="ensure();">确定</a>
+</div>
+<input id="WipOutLogin_pickListID" type="hidden" value="@ViewBag.WipOutLogin_pickListID" />
+<input id="WipOutLogin_materielID" type="hidden" value="@ViewBag.WipOutLogin_materielID" />
+<input id="WipOutLogin_materReqDetailNo" type="hidden" value="@ViewBag.WipOutLogin_materReqDetailNo" />
+

@@ -1,0 +1,321 @@
+﻿@using App_UI.Resource.ViewText.Purchase
+@using App_UI.Resource.ViewText.Common
+<script >
+
+    //显示数据的表的标志
+    var tableName = "#supplierOrderTable";
+ 
+    //物料编码、产品名称、加工工艺、单位、数量、单价、估价、交货日期、备注（老型号）
+    //列属性:field,title,width,sortable,editor,formatter
+    var columns = [[
+        ["ProductPartID","",null,false],
+        ["ProductAbbrev", "编码", 130, true],
+        ["ProductName", "产品型号", 130, true],
+        ["MaterialsSpecReq", "材料规格及型号", 100, false],
+        ["PdProcDtID", "加工工艺", 100, false],
+        ["ReqQty", "数量", 120, true],
+        ["PriceUp", "单价", 90, false, "text"],
+        ["Evaluate", "估价", 90, false, { type: "text" }],
+        ["DlyDate", "交货日期", 120, true, { type: "datebox",options:{ editable:false } }, function (value, row, index) {
+
+            var date;
+            if (value == "") {
+                return "";
+            }
+            var strDt = (value + "").replace(/\/Date\(/, "").replace(/\)\//, "");
+            if (isNaN(strDt)) {
+                date = strDt.ToDate();
+            } else {
+                date = new Date(strDt.ToInt());
+            }
+            var str = date.Format("yyyy-MM-dd");
+            row.DlyDate = str;
+            return str;
+        }],     
+        ["Remarks", "备注(版本号)", 120, false, { type: "text" }]
+    ]]
+
+    //新建跳转
+    var NewSupplierOrder = function () {
+        parent.addTab("外协加工调度单-新建", "/Purchase/SupplierOrder/SupplierOrderForCreat");
+    };
+
+    //审核
+    var auditFun = function () {
+        var check = "";
+        check = "@ViewBag.supplierOrderId";//需要审核的单号
+        $.messager.confirm("", "您确定要对此外协单进行审核吗？", function (reviewOK) {
+            if (reviewOK) {
+                $.post("/Purchase/SupplierOrder/Audit", { supplierOrder: check }, function (data) {
+                    var _data = eval('(' + data + ')');
+                    console.info(_data);
+                    if (_data.Result == true) {
+                        window.location.reload();//刷新数据//重新加载数据
+                        //alert("hello!");
+                    } else {
+                        $.messager.alert("信息", _data.Message, "info");
+                    }
+                });
+            }
+        });
+    }
+
+    //保存
+    var saveFun = function (rowIndex, rowData, changes) {
+        var row = $(tableName).datagrid('getRows');
+        if (row.length > 0) {
+            //定义一个数组用于存放table中的数据
+            var orderList = [];
+            for (var i = 0 ; i < row.length; i++) {
+                $(tableName).datagrid("endEdit", i);
+
+                var orderDetail = {};
+                orderDetail["RowIndex"] = i;
+                orderDetail["CustomerOrderID"] = row[i].CustomerOrderID
+                orderDetail["ProductPartID"] = row[i].ProductPartID;
+                orderDetail["PrchsUp"] = row[i].PriceUp;
+                orderDetail["Evaluate"] = row[i].Evaluate;
+                orderDetail["DlyDate"] = row[i].DlyDate;
+                orderDetail["Remarks"] = row[i].Remarks;
+                //将order加进orderList
+                orderList.push(orderDetail);
+            }
+            $.messager.confirm("", "您确定要保存画面上的内容吗？", function (reviewOK) {
+                if (reviewOK) {
+                    $.ajax({
+                        async: true,
+                        url: "/Purchase/SupplierOrder/Save",
+                        data: {
+                            //明细表的主键
+                            SupOdrID: document.getElementById("SupOrderId").innerHTML,
+                            //MarkName: $("#MarkUser").searchbox("getValue"),
+                            //PrdMngrName: $("#ProduceManager").searchbox("getValue"),
+                            //OptrName: $("#Operator").searchbox("getValue"),
+                            MarkName: $("#MarkUser").val(),
+                            PrdMngrName: $("#ProduceManager").val(),
+                            OptrName: $("#Operator").val(),
+                            //详细数据
+                            OrderList: orderList
+                        },
+                        type: "post",
+                        success: function (data) {
+                            var _data = eval('(' + data + ')');
+                            if (_data.Result == true) {
+
+                                $.messager.alert("信息", _data.Message, "info", function () {
+                                    window.location.reload();//刷新数据
+                                });
+                            } else {
+                                //title：显示在标题面板的标题文本;msg：提示框显示的消息文本;icon：提示框显示的图标,可用的值是：error,question,info,warning;fn：当窗口关闭时触发的回调函数
+                                $.messager.alert("信息", _data.Message, "info", function () {
+                                    openEdit();
+                                });
+                                //do something another...
+                            }
+                        }
+                    });
+                }
+            });
+        }
+    }
+
+        //打开编辑
+        var openEdit = function () {
+            var row = $(tableName).datagrid('getRows');
+            if (row.length > 0) {
+                for (var i = 0 ; i < row.length; i++) {
+                    $(tableName).datagrid("beginEdit", i);
+                }
+            }
+        }
+
+        //打印预览
+        var printShowFun = function () {
+            parent.addTab("打印预览", "/Purchase/SupplierOrder/PrintPreview?supplierOrderId=@ViewBag.supplierOrderId");
+        }
+
+        //对于界面中的text_valide名字的输入框,如果有值则设为不可改
+        var generate = function () {
+            var elements = document.getElementsByName("text_valide");
+            for (var i = 0; i < elements.length; i++) {
+                var e = elements[i];
+                if (e.value != "") {
+                    e.disabled = "true";
+                }
+            }
+        }
+
+        $(function () {
+            var temp = $("#data").val();//得到传过来的外购单号
+            Common.Functions.createDataGrid({
+                target: $(tableName),
+                url: "/Purchase/SupplierOrder/ShowSupplierOrderDetail?supplierOrderId=@ViewBag.supplierOrderId",
+                columns: columns,
+                //toolbar: $("#toolbar"),
+                pagination: false,//不要分页
+                maxWidth: 1000,
+                maxHeight: 200,
+                onBeforeLoad: function (queryParams) {
+                    //var arr = $(formName).serializeArray();
+                    //$.each(arr, function () {
+                    //    queryParams[this.name] = this.value;
+                    //});
+                },
+                onAfterEdit: function (rowIndex, rowData, changes) {
+                    //endEdit该方法触发此事件
+
+
+                },
+                onLoadError: function () {
+                    alert("请求服务器失败，请刷新页面重试！");
+                },
+                onCreating: function (data) {
+                    //加载input框
+                    generate();
+                    //开启编辑
+                    openEdit();
+                }
+            });
+            //隐藏 产品零件ID
+            $(tableName).datagrid('hideColumn', 'ProductPartID');
+        });
+</script>
+
+<div class="FunctionButton_Area" style="width:100%;text-align:right;"> 
+    <!--  添加 -->
+    @UserHelpers.ButtonForAdd("NewSupplierOrder()")
+    <!--  审核 -->
+    @UserHelpers.ButtonForExamine("auditFun()")
+    <!--  保存 -->
+    @UserHelpers.ButtonForSave("saveFun()")
+    <!-- 打印预览 -->
+    @UserHelpers.ButtonForPrintPreview("printShowFun()")
+    <!--  关闭 -->
+    @UserHelpers.ButtonForClose("parent.closeTab(gTitle)")
+
+    <span style="width:100px;margin-right:10%">&nbsp;</span>
+</div>
+<!--  分割线 -->
+@UserHelpers.Line()
+
+<!--  次标题 -->
+<div style="text-align:center;">
+
+    @if (ViewBag.OrderType == VT_SupplierOrderPrint.ProcessOrderValue) {
+        <!--  外协加工调度单 -->
+        <h2>@VT_SupplierOrderPrint.SupplierProcessingOrder</h2>  
+   }else{
+        <!-- 外协加工注塑单  -->
+        <h2>@VT_SupplierOrderPrint.SupplierInjectionOrder</h2>    
+   }
+</div><br />
+
+<!--  调度单信息  -->
+<div style="width :100%;text-align :center;margin-bottom :10px;">
+    <div style="">
+    <table id="infor_table" style="margin:auto; text-align: left;">
+        <tr>
+            <!-- 外协单单号 -->
+            <td><span>
+                @if (ViewBag.OrderType == VT_SupplierOrderPrint.ProcessOrderValue)
+                {
+                    <!-- 外协加工调度单 -->
+                    @VT_SupplierOrderPrint.SupplierProcessingOrder  
+                }
+                else
+                {
+                    <!-- 外协加工注塑单 -->
+                    @VT_SupplierOrderPrint.SupplierInjectionOrder
+                }@VT_SupplierOrderPrint.No：
+            </span>
+                <label id="SupOrderId" >@ViewBag.supplierOrderId</label></td>
+            <!-- 下单日期 -->
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <span>@VT_SupplierOrderList.MarkDate：</span>                          
+                    <label>@ViewBag.MarkUserSignDate</label></td>
+        </tr>
+        <tr>
+            <!-- 所属部门 -->
+            <td>
+                <span>@VT_SupplierOrderList.BelongDepartment：</span>
+                <label>@ViewBag.departmentId</label>
+            </td>
+            <!-- 当前状态 -->
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <span>@VT_SupplierOrderList.CurrentStatus：</span>                          
+                    <label>@ViewBag.supplierOrderStatus</label></td>
+            <!-- 紧急状态 -->
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <span>@VT_SupplierOrderList.UrgentStatus：</span>
+                <label>@ViewBag.UrgentStatus</label>
+            </td>      
+        </tr>
+        <tr>
+            <!-- 调入单位  -->
+            <td><span>@VT_SupplierOrderList.InCompany：</span>
+                <label>@ViewBag.InCompanyId</label>
+            </td>
+            <!-- 调出单位 -->
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <span>@VT_SupplierOrderList.OutCompany：</span>
+                <label>@VT_Common.CompanyName</label>
+            </td>
+        </tr>
+    </table>       
+</div>
+
+<!--  调度单详细数据  -->
+<div class="datagrid">
+    <table id="supplierOrderTable"></table>
+</div>
+
+<!-- 所操作过的人签名 -->
+<div class="footOrder" style="width: 100%; text-align: center; margin-top: 20px;">
+    <div style="width: 100%;">
+        <table id="foot_table" class="Search_Form" style=" margin: auto; text-align: left;">
+            <tr>
+                <!--  生产主管 -->
+                <td><span>@VT_SupplierOrderList.ProduceManager：</span>
+                    @if (@ViewBag.ProduceManager == null)
+                    {
+                        @UserHelpers.Input("ProduceManager")
+                    }
+                    else
+                    {
+                        <label>@ViewBag.ProduceManager
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        </label>
+                    }
+                </td>
+                <!--  制单人 -->
+                <td><span style="margin-left: 100px;">@VT_SupplierOrderList.MarkUser：</span>
+                    @if (@ViewBag.MarkUser == null)
+                    {
+                        @UserHelpers.Input("MarkUser")
+                    }
+                    else
+                    {
+                        <label>@ViewBag.MarkUser
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        </label>
+                    }
+                </td>
+                <!--  经办人 -->
+                <td><span style="margin-left: 100px;">@VT_SupplierOrderPrint.Operator：</span>
+                    @if (@ViewBag.Operator == null)
+                    {
+                        @UserHelpers.Input("Operator")
+                    }
+                    else
+                    {
+                        <label>@ViewBag.Operator</label>
+                    }
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+     </div>

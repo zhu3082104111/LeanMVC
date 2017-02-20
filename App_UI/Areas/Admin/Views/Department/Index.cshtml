@@ -1,0 +1,117 @@
+﻿@using System.Reflection
+@model System.Collections.IList
+<div class="ui-widget-header">
+    <div id="button">
+        @Ajax.ActionLink(lang.Create, "Create", null, new AjaxOptions() { UpdateTargetId = "Main" }, new { id = "button_create" })
+        @Html.ActionLink(lang.Export, null, null, new { report = true, KeywordField = Request["KeywordField"], keyword = Request["keyword"] }, new { id = "button_export", target = "_blank" })
+        <a id="button_search" href="javascript:;" onclick="$('#searchform').toggle('blind');">@lang.Search</a>
+        @using (Ajax.BeginForm(null, null, new AjaxOptions { UpdateTargetId = "Main", HttpMethod = "get" }, new { id = "searchform", style = "display:none" }))
+        {
+            <fieldset>
+                <legend>@lang.Search</legend>
+                @foreach (PropertyInfo title in ViewBag.PropertyInfo)
+                {
+                    if (title.Name != "DeptId")
+                    {
+                    <div style="float: left; padding-right: 10px; white-space: nowrap; line-height: 40px;">
+                     @lang.ResourceManager.GetString(title.Name)
+                     
+                        @switch (title.GetMethod.ReturnType.Name)
+                        {
+                            case "Boolean":
+                                
+                                <select  name="Search_@title.Name">
+                                    <option value="">@lang.All</option>
+                                    <option value="true"  @(Request.QueryString["Search_" + @title.Name] == "true" ? "selected" : "")>@lang.True</option>
+                                    <option value="false"  @(Request.QueryString["Search_" + @title.Name] == "false" ? "selected" : "")>@lang.False</option>
+                                </select>
+                        
+                                break;
+
+                            case "Int32":
+                            case "Decimal":
+                            case "DateTime":
+
+                            @Html.TextBox("Search_" + title.Name, (Request.QueryString["Search_" + title.Name] != null && Request.QueryString["Search_" + title.Name].Contains(",")) ? Request.QueryString["Search_" + title.Name].Split(',')[0] : "", new { size = 10 })
+                            <span>~</span>
+                            @Html.TextBox("Search_" + title.Name, (Request.QueryString["Search_" + title.Name] != null && Request.QueryString["Search_" + title.Name].Contains(",")) ? Request.QueryString["Search_" + title.Name].Split(',')[1] : "", null, new { size = 10 })
+                
+                                break;
+
+                            default:
+
+                            @Html.TextBox("Search_" + title.Name, Request["Search_" + title.Name])
+                                break;
+                        }
+                    </div>
+                    }
+                }
+              <div style="float: left; padding-right: 10px; white-space: nowrap; line-height: 40px;">
+                    <input type="submit" value="@lang.StartSearch" />
+                </div>
+            </fieldset>
+        }
+    </div>
+</div>
+
+<table style="margin-top: 1px;">
+    <thead>
+        <tr>
+            @foreach (PropertyInfo title in ViewBag.PropertyInfo)
+            {
+                if (title.Name == "DeptId")
+                {
+                <th class="ui-state-default">
+                    @lang.Edit
+                </th>
+                }
+                else
+                {
+                <th class="ui-state-default">
+                 @if (lang.ResourceManager.GetString(title.Name) != null)
+                    {
+                        if (Request["ordering"] == title.Name)
+                        {
+                        @Ajax.ActionLink(lang.ResourceManager.GetString(title.Name) + " ↓", null, new { ordering = title.Name + " desc" }, new AjaxOptions { UpdateTargetId = "Main" }) 
+                        }
+                        else if (Request["ordering"] == title.Name + " desc")
+                        {
+                        @Ajax.ActionLink(lang.ResourceManager.GetString(title.Name) + " ↑", null, new { ordering = title.Name }, new AjaxOptions { UpdateTargetId = "Main" }) 
+                        }
+                        else
+                        {
+                        @Ajax.ActionLink(lang.ResourceManager.GetString(title.Name) + "", null, new { ordering = title.Name }, new AjaxOptions { UpdateTargetId = "Main" }) 
+                        }
+                    }
+                </th>
+                }
+            }
+
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                @foreach (PropertyInfo title in ViewBag.PropertyInfo)
+                {
+                    if (title.Name == "DeptId")
+                    {
+                    <td>
+                        @Html.Partial("Ajax_Edit_Verify", @item.GetType().GetProperty("DeptId").GetValue(item, null))
+                    </td>
+                    }
+                    else
+                    {
+                    <td>
+                        @item.GetType().GetProperty(title.Name).GetValue(item, null)
+                    </td>
+               
+                    }
+                }
+        
+            </tr>
+        }
+    </tbody>
+</table>
+@Html.Raw(Ajax.MikePager((int)Model.GetType().GetProperty("PageIndex").GetValue(Model, null), (int)Model.GetType().GetProperty("PageSize").GetValue(Model, null), (int)Model.GetType().GetProperty("TotalCount").GetValue(Model, null)))

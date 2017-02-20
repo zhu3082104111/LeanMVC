@@ -1,0 +1,239 @@
+﻿@using App_UI.Resource.ViewText.Produce
+@using App_UI.Resource.ClientMessage
+@using App_UI.Areas.Controllers
+@using App_UI.Helper
+@{
+    Layout = "~/Views/Shared/_DefaultLayout.cshtml";
+    ViewBag.Title = "总装大工票";
+}
+@section head{
+<style type="text/css">
+   /* .div_search {
+        width:100%;
+        height:auto;
+        margin-bottom:20px;
+        text-align:center;
+    }
+    .table_search {
+        margin:auto;
+       
+        text-align:left;
+    }
+    .table_search td {
+       
+    }
+    .div_main {
+        text-align:center;
+        width:auto;
+        height:auto;
+       
+    }
+    .div_datagrid .datagrid{
+        width:auto;
+        height:auto;
+        text-align:center;
+        margin:auto;
+    }
+    .div_dialog_title {
+        width:100%;
+        height:100%;
+        text-align:center;
+    }
+    .div_detail {
+    }
+       */
+
+</style>
+
+<script>
+    var dialog_Width = 1068;
+    var dialog_Height = 680;
+
+
+    var data_Table_Name = "#Data_Table";//数据列表表格
+    var search_Form_Name = "#Search_Form";//搜索form
+    var detail_Form = "#Detail_Form";//添加form
+    var update_Form = detail_Form;//修改form
+
+    var operator_Model = ["add","update"];//
+    var operator_Flag;//标志:添加还是修改
+
+    var UId;//暂存修改时的uid(主键)
+
+    //列属性:field(字段,非空) ,title(列名,非空),width(默认80),sortable(默认false),editor(默认null),formatter(默认-函数)
+    var TABLE_COLUMNS = [[
+        ["AssemBillID", "工票号码", 100, true, ""],
+        ["ProductType", "产品型号", 100, true, ""],
+        ["ProductName", "产品名称", null, true],
+        ["LoadCount", "装配总数量", 100, false],
+        ["IsOver", "是否完结", null, false, ""],
+        ["Dispatcher", "调度员", null, false, null],
+        ["Checker", "检验员", 100, false, null],
+        ["CheckResult", "检验结果", 100, false, null]
+    ]];
+
+    $(function () {
+       Common.Functions.createDataGrid({//创建datagrid,详细内容参见functions.js
+            target: data_Table_Name,//table容器,必须
+            url: "/Produce/FAWorkticketAll/Get",//获取数据的地址,必须
+            columns: TABLE_COLUMNS,//列属性,必须
+            idField: "AssemBillID",//标识字段
+            checkbox: true,//是否显示checkbox
+            singleSelect: true,
+            maxWidth: 950,//最大宽度
+            maxHeight: 200,//最大高度
+            pageSize: 10, pageList: [10, 20, 30],
+            onBeforeLoad: function (queryParams) {//可以添加一些额外参数,主要用于查询条件
+
+                var arr = $(search_Form_Name).serializeArray();
+
+                $.each(arr, function () {
+                    queryParams[this.name] = this.value;
+                });
+            },
+            onLoadError: function () {
+                alert("请求服务器失败，请刷新页面重试!");
+            },
+            onCreating: function (data) {//数据成功加载
+                //do something...
+            }
+        });
+
+
+    });
+
+
+    //弹出"添加人员信息"窗口
+    var show_detail_form_Fun = function () {
+       
+        var selectedRows = $(data_Table_Name).datagrid("getSelections");
+            if (selectedRows.length == 0) {
+                $.messager.alert("提示", "您尚未选中任何记录");
+            } else {
+                var id = selectedRows[0]["AssemBillID"];
+                parent.addTab("总装大工票详细", '/Produce/FAWorkticketAll/Details/' + id);
+            }
+       
+    };
+
+    
+    //弹出"修改人员信息"窗口,参数：用户id,部门id
+    var show_Update_Form_Fun = function (uid,deptId) {
+        var dialog = $("#dlg");
+        var form = $(update_Form);
+        UId = uid;
+        form.form("clear");
+       
+        form.form("load", { DeptId: deptId });//加载当前用户的部门Id
+        //$("#comboDept").combobox("reload");
+        //dialog.find("div.ftitle").text("修改人员信息");
+        $('#p').panel({
+            width: dialog_Width-100,
+            height: dialog_Height-100,
+            href: '/Produce/FAWorkticketAll/Update',
+            onLoad: function () {
+                alert('loaded successfully');
+            }
+        });
+        dialog.dialog({ title: "<div class='div_dialog_title'>工票</div>", width: dialog_Width, height: dialog_Height, modal: true }).dialog("open");
+        $.messager.progress();//加载进度条
+        operator_Flag = operator_Model[1];
+        $.ajax({
+            async: true,
+            url: "/Produce/FAWorkticketAll/Detail",
+            data: { UId: uid },
+            dataType: "json",
+            type:"post",
+            success: function (data) {
+              
+                if (!typeof(data.rows)=="undefined") {
+                    var _data = data.rows[0];
+                    
+                    form.form("load", _data);
+                    $.messager.progress("close");
+                } else {
+                    $.messager.progress("close");
+                    $.messager.alert("消息！", "加载数据失败，请重新登录试试!", null, function () { dialog.dialog("close"); });
+                    
+                }
+               
+
+            },
+            error: function () {
+                $.messager.progress("close");
+                console.info(arguments);
+                alert("请求服务器失败，请刷新页面重试!");
+            }
+        });
+    };
+
+    //导出，待修改
+    var exportFun = function () {
+        $.ajax({
+            type: "GET",
+            url: "/Produce/FAWorkticketAll/Edit/5",
+                    success: function (msg) {
+                    }
+
+        });
+    };
+
+    //搜索
+    var search_Btn_Fun = function () {
+        $(search_Form_Name).form("submit",{//form提交
+            url: "/Produce/FAWorkticketAll/Get",
+            onSubmit: function (param) {//除表单外的数据(分页)
+                var pager = $(data_Table_Name).datagrid("getPager");
+                var pagerOptions=$(pager).pagination("options");
+                param.rows = pagerOptions.pageSize;
+                param.page = 1;
+            },
+            success: function (data) {
+                $(data_Table_Name).datagrid("loadData",eval('('+data+')'));//重新加载数据
+            }
+        });
+    }
+   
+
+    //根据主键删除某条记录,参数：用户id
+    var delete_Infos_Fun = function (uid) {
+        $.messager.confirm("Confirm", "确认删除本条记录?", function (r) {
+            if (r) {
+                $.post("/Produce/FAWorkticketAll/Delete", { UId: uid }, function (data) {
+                    var _data = eval('(' + data + ')');
+                    console.info(_data);
+                    if (_data.result == true) {
+                        $(data_Table_Name).datagrid("reload");
+                    } else {
+                        alert("删除失败,请重新操作");
+                        //do something another...
+                    }
+                });
+            }
+        });
+    };
+    function pageClose() {
+        parent.closeTab();
+
+    }
+
+    function checkSearchForm() {
+        if (orderId.val() == "") {
+            alert("");
+        }
+    }
+
+</script>
+}
+    
+ @{ 
+    if(Model==UIConstant.VIEW_DIALOGUE)
+    {
+        Html.RenderPartial("Index_Dialogue");
+    }
+    else
+    {
+        Html.RenderPartial("Index_Search"); 
+    }
+ }
+   

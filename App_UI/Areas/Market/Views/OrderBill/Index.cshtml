@@ -1,0 +1,255 @@
+﻿@{
+    ViewBag.Title = "Index";
+}
+
+@section head{
+    <!---- style ---->
+    <style type="text/css">
+        #ShowOrderBillLayoutDIV{
+            margin:0px;
+            padding:0px;
+            text-align:center;
+
+            /*border:1px solid blue;*/
+        }
+
+        #ShowOrderBillLayoutDIV span{
+            margin:0px;
+            padding:0px;
+
+            /*border:1px solid blue;*/
+	    }
+
+
+        /* Button Layout */
+        #ShowOrderBillLayoutDIV .FunctionButton_Area  .NewlyBuildButton_Menument, .EditButton_Menument, .DeleteButton_Menument, .CloseButton_Menument{
+            margin: 0px 0px 0px 5px;
+        }
+
+        
+        /* Title Layout */
+        #ShowOrderBillLayoutDIV .PageTitle_div{
+            margin:0px;
+            padding:0px;
+
+            /*border:1px solid blue;*/
+        }
+
+
+        /* ErrorMessage Layout */
+        #ShowOrderBillLayoutDIV #ErrorMessageDIV{
+            color: red;
+            display: none;
+            margin: 0px;
+            padding: 0px 0px 0px 7%;
+            text-align: left;
+        }
+
+
+        /* Form Layout */
+        #ShowOrderBillLayoutDIV .Search_Form{
+            margin:2% auto 0px auto;
+            padding:0px;
+            width:912px;
+
+            /*border:1px solid blue;*/
+        }
+
+        #ShowOrderBillLayoutDIV .Search_Form div{
+            margin:0px;
+            padding:0px;
+            text-align:left;
+            width:100%;
+
+            /*border:1px solid blue;*/
+        }
+
+        #ShowOrderBillLayoutDIV .Search_Form #SearchMarketOrder{
+            margin:0px 0px 0px 15.4%;
+            padding:0px;
+        }
+
+        /* Table Layout */
+        #ShowOrderBillLayoutDIV .ContentManageDIV{
+            margin:0.5% 0px 0px 0px;
+            padding:0px;
+            text-align:left;
+
+            /*border:1px solid blue;*/
+        }
+
+        #ShowOrderBillLayoutDIV .ContentManageDIV .SetCenterDIV{
+            margin:0 auto;
+            padding:0px;
+            width:912px;
+        }
+
+
+    </style>
+
+    <!-- javascript -->
+    <script>
+        (function ($) {
+            /********* 功能函数 *********/
+            //新增
+            window.AddFun = function () {
+                parent.addTab("新增订单", "/Market/OrderBill/AddOrderBill");
+            } //end AddFun
+
+            //编辑
+            window.UpdateFun = function () {
+                if ($("#MarketOrderTable").datagrid("getSelections").length == 0) { //判断是否有选中记录
+                    alert("请选择记录");
+                    return;
+                }
+
+                var clientOrderID = $("#MarketOrderTable").datagrid("getSelections")[0]["ClientOrderID"]; //获取选中记录字段 ClientOrderID 值
+                var clientVersion = $("#MarketOrderTable").datagrid("getSelections")[0]["ClientVersion"]; //获取选中记录字段 ClientVersion 值
+                var url = "/Market/OrderBill/UpdateOrderBill?ClientOrderID=" + clientOrderID + "&&ClientVersion=" + clientVersion; //设置url
+
+                parent.addTab("修改订单", url);
+            } //end UpdateFun
+
+            //删除
+            window.DeleteFun = function () {
+            } //end DeleteFun
+
+            //关闭
+            window.CloseFun = function () {
+            } //end CloseFun
+
+            //查询
+            window.SearchFun = function () {
+                $("#SearchMarketOrderForm").form("submit", {//form提交
+                    url: "/Market/OrderBill/GetMarketOrderList",
+                    //事件
+                    onSubmit: function (param) {//除表单外的数据(分页)
+                        //var pager = $("#MarketOrderTable").datagrid("getPager");
+                        //var pagerOptions = $(pager);
+                        //param.rows = pagerOptions.pageSize;
+                        param.rows = $("#MarketOrderTable").datagrid("getPager").pagination("options");
+                        param.page = 1;
+                    },
+                    success: function (data) {
+                        $("#MarketOrderTable").datagrid("loadData", eval("(" + data + ")"));//重新加载数据       
+                    }
+                });
+            } //end SearchFun
+
+            //产品弹出框
+            window.ShowPIDialogFun = function () {
+            } //end ShowPIDialogFun
+
+            //客户弹出框
+            window.ShowMCIDialogFun = function () {
+            } //end ShowMCIDialogFun
+
+
+            /********* 表格函数 *********/
+            //获取列属性
+            var GetMOCFun = function () {
+                var _marketOrderColumns =
+                    [
+                        [
+                            //列属性:field(字段,非空) ,title(列名,非空),width(默认80),sortable(默认false),editor(默认null),formatter(默认-函数)
+                            ["ClientOrderID", "客户订单号", 150, true],
+                            ["DeliveryDate", "交货日期", 150, true],
+                            ["ClientName", "客户名称", 150, true],
+                            ["EditUserName1", "制单人", 100, true],
+                            ["OtherMatter", "备注", 176, true],
+                            ["OrderStatusName", "当前状态", 150, true]
+                        ]
+                    ];
+                return _marketOrderColumns;
+            }
+
+            //获取绑定字符串
+            var GetBindMOSFun = function () {
+                var _bindMarketOrderString = Common.Functions.createDataGrid({
+                    checkbox: true,
+                    checkOnSelect: true,
+                    columns: GetMOCFun(),
+                    idField: "ClientOrderID",
+                    pagination: true,
+                    selectOnCheck: true,
+                    singleSelect: true,
+                    sortName: "ClientOrderID",//单页排序的列
+                    sortOrder: "asc",//升序
+                    target: "#MarketOrderTable",
+                    url: "/Market/OrderBill/GetMarketOrderList",
+                    //事件
+                    onBeforeLoad: function (param) {//可以添加一些额外参数,主要用于查询条件
+                        var arr = $("#SearchMarketOrderForm").serializeArray();
+                        $.each(arr, function () {
+                            param[this.name] = this.value;
+                            //alert(this.name + ":" + this.value);
+                        });
+                    },
+                    onCreating: function (data) {
+                        //操作表头第3列对象，将宽度调宽，追加第2列的div，设置居中及文本
+                        //$(".datagrid-header-row td:eq(2)")
+                        //    .append($(".datagrid-header-row td:eq(1) div"))
+                        //    .attr("align", "center")
+                        //    .css("width", 200)
+                        //    .text("计划交期");
+                        //设置表头第2列对象宽度为0
+                        //$(".datagrid-header-row td:eq(1)").css("width", 0);
+                    },
+                    onLoadError: function () {
+                        alert("请求服务器失败，请刷新页面重试!");
+                    },
+                    loadFilter: function (data) {
+                        var marketOrderLoadFilter = {};
+                        marketOrderLoadFilter.rows = data.rows ? data.rows : data;
+                        marketOrderLoadFilter.total = data.total ? data.total : 0;
+
+                        AdaptDt(this, marketOrderLoadFilter.rows, "DeliveryDate");
+
+                        return marketOrderLoadFilter;
+                    }
+                })
+                return _bindMarketOrderString;
+            }
+
+
+            /******** 页面加载 ********/
+            $(function () {
+                GetBindMOSFun();
+                //$("#MarketOrderTable").datagrid("loadData", [{ ClientOrderID: "CO1", DeliveryDate: "2013/12/4", ClientName: "CN1", EditName: "U1", OtherMatter: "OM1", StateFlag: "1" }, { ClientOrderID: "CO2", DeliveryDate: "2013/12/4", ClientName: "CN2", EditName: "U2", OtherMatter: "OM2", StateFlag: "2" }]);
+            })
+        }(jQuery));
+    </script>
+
+}<!-- end section head -->
+
+
+<!-- layout -->
+<div id="ShowOrderBillLayoutDIV">
+
+    <!-- Button -->
+    <div class="FunctionButton_Area">@UserHelpers.ButtonForCreate("AddFun()")@UserHelpers.ButtonForUpdate("UpdateFun()")@UserHelpers.ButtonForDelete("DeleteFun()")@UserHelpers.ButtonForClose("CloseFun()")</div>
+
+
+    <!-- Line -->
+    <div class="LevelLine_div"><hr /></div>
+
+    
+    <!-- Title -->
+    <div class="Company_Title"><span>杭州雷迪克汽车部件制造有限公司</span></div>
+    <div class="PageTitle_div"><span>客户订单一览</span></div>
+
+
+    <!-- Form -->
+    <form class="Search_Form" id="SearchMarketOrderForm" method="post" name="SearchMarketOrderForm">
+        <div><span style="display:inline-block;text-align:right;width:10.2%;">客户订单号：</span>@UserHelpers.InputSimple("ClientOrderID")<span style="display:inline-block;margin:0px 0px 0px 1%;text-align:right;">产品型号：</span>@UserHelpers.InputReadOnly("ProductID","ShowPIDialogFun()")<span style="display:inline-block;margin:0px 0px 0px 1%;text-align:right;width:8.6%;">客户名称：</span>@UserHelpers.InputReadOnly("ClientID","ShowMCIDialogFun()")<span style="display:inline-block;margin:0px 0px 0px 1%;text-align:right;width:8.6%;">当前状态：</span>@UserHelpers.SelectWidget("00029","OrderStatus","OrderStatus")</div>
+        <div style="margin:0.5% 0px 0px 0px;"><span style="display:inline-block;text-align:right;width:10.2%;">生产单元：</span>@UserHelpers.SelectWidget("00009","ProduceCellID","ProduceCellID")<span style="display:inline-block;margin:0px 0px 0px 1.3%;text-align:right;">交货日期：</span>@UserHelpers.TimeInput("BeginDeliveryDate")<span style="display:inline-block;text-align:center;width:9.5%;">~</span>@UserHelpers.TimeInput("EndDeliveryDate")@UserHelpers.ButtonForSearch("SearchFun()","SearchMarketOrder")</div>
+    </form>
+
+
+    <!-- Table -->
+    <div class="ContentManageDIV">
+        <div class="SetCenterDIV"><table id="MarketOrderTable" style="width:912px;"></table></div>
+    </div>
+       
+</div>
+

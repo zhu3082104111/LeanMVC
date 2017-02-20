@@ -1,0 +1,115 @@
+﻿@using App_UI.Resource.ViewText.Common
+@using App_UI.Resource.ViewText.Purchase
+@using Model
+
+
+<script type="text/javascript" src="~/Scripts/common/dialog.js"></script>
+<script type="text/javascript" src="~/Scripts/purchase/PurchaseOrder.js"></script>
+
+<div class="FunctionButton_Area" style="width:100%;text-align:right;">
+    @UserHelpers.ButtonForSave("saveCreate()")
+    @UserHelpers.ButtonForClose("parent.closeTab(gTitle)")  
+</div>
+
+<!--分割线-->
+@UserHelpers.Line()
+
+<div style="text-align:center;font-size:20px;">
+    <!-- 页面标题 -->
+    @UserHelpers.Title(@VT_PurchaseOrderList.EditTitle)
+</div><br />
+
+<!-- 隐藏项 -->
+    <input type="hidden" id="data" value="@ViewBag.OUT_ODR_ID" />
+
+<form method="post" id="form" class="Search_Form">
+<!-- 搜索块 -->
+<div style="width: 100%; text-align: center; margin-bottom: 15px;">
+    <div style="width: 95%; margin: auto; text-align: left;">
+        @*<form id="searchForm" method="post">*@
+            <table style="padding-left:150px;">
+                <tr>
+                    <td style="height:40px;">
+                       @* @VT_PurchaseOrderList.OrderID：*@
+                        @VT_PurchaseOrderList.CustomerOrder：
+                        @*<input id='CustomerOrder'class="easyui-searchbox" style="width:150px" data-options="searcher:searchBox,prompt:'',menu:'#mm'" name='CustomerOrder'/>*@
+                        @UserHelpers.Input("CustomerOrder")
+                    </td>
+                    <td style="width:150px;"></td>
+                    <td>@VT_PurchaseOrderList.UrgentStatus：@UserHelpers.SelectWidget(Constant.MasterSection.URGENT_STATE,"UrgentStatus","UrgentStatus")
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    </td>
+                </tr>
+                <tr>
+                    <td>@VT_PurchaseOrderList.DeptName：@UserHelpers.SelectWidget(Constant.MasterSection.DEPT, "DepartmentID", "DepartmentID")
+                    </td>
+                    <td></td>
+                    <td>@VT_PurchaseOrderList.CName：@UserHelpers.Input("OutCompanyName","ShowCompInfoScreen();") 
+                        <input type="hidden" id="OutCompanyID" name="OutCompanyID"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="height:40px;">@VT_PurchaseOrderList.EstDate：<label id="EstablishDate" name="EstablishDate">@ViewBag.NowTime</label></td>
+                    <td></td>
+                    <td style="text-align:right;">
+                        <!-- 添加行按钮 -->
+                        @UserHelpers.ButtonForLineAddition("addRow()")
+                    </td>
+                </tr>
+            </table>
+        @*</form>*@
+    </div>
+</div>
+
+<div class="datagrid" style="text-align:center;width:100%;">
+    <table id="purchaseOrderTable" ></table>
+</div>
+   
+
+<div>
+    <table style="width:900px;height:auto;margin:auto">
+        <tr style="height:40px;">
+            <td style="width:75px;">@VT_PurchaseOrderList.ApproveUID</td>
+            <td style="width:150px;">
+                @*<input id="ApproveUID" name="ApproveUID" class="easyui-validatebox" value="" />*@ 
+                <input type='text' name='ApproveUID' id='ApproveUID' disabled='disabled' size='13'/><img src='/Scripts/js/themes/icons/search_icon.png' onclick=''/>
+            </td>
+            <td style="width:75px;">@VT_PurchaseOrderList.VerifyUID</td>
+            <td style="width:150px;">
+                @*<input id="VerifyUID" name="VerifyUID" type="text" class="easyui-validatebox" value="" />*@
+                <input type='text' name='VerifyUID' id='VerifyUID' disabled='disabled' size='13'/><img src='/Scripts/js/themes/icons/search_icon.png' onclick=''/>
+            </td>
+            <td style="width:75px;">@VT_PurchaseOrderList.EstUID</td>
+            <td style="width:150px;">
+                @*<input id="EstablishUID" name="EstablishUID" type="text" class="easyui-validatebox" value="" />*@
+                <input type='text' name='EstablishUID' id='EstablishUID' disabled='disabled' size='13'/><img src='/Scripts/js/themes/icons/search_icon.png' onclick=''/>
+            </td>
+            <td style="width:75px;">@VT_PurchaseOrderList.SignUID</td>
+            <td style="width:150px;">
+                @*<input id="SignUID" name="SignUID" type="text" class="easyui-validatebox" value="" />*@
+                <input type='text' name='SignUID' id='SignUID' disabled='disabled' size='13'/><img src='/Scripts/js/themes/icons/search_icon.png' onclick=''/>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="6" style="text-align:left">@VT_PurchaseOrderList.Remarks<input id="RMRS" type="text" class="easyui-validatebox" value="" style="width:550px;" /></td>
+            <td>@VT_PurchaseOrderList.FaxNo</td><td><input id="FAXNO" name="FAX_NO" type="text" class="easyui-validatebox" value="" /></td>
+        </tr>
+    </table>
+</div>
+</form>
+
+<!-- *************************************************************** 子查询画面START ******************************************************** -->
+<!-- 供货商选择对话框 -->
+<div class="easyui-dialog" id="CompSelectDiv" closed="true" data-options="buttons:'#companySelect',modal:true"></div>
+<div id="companySelect">
+    @UserHelpers.ButtonForChoose("SelCompAndCloseDialogFun('OutCompanyID', 'OutCompanyName', '0', 'CompSelectDiv')")
+    @UserHelpers.ButtonForClose("CloseDialogFun('CompSelectDiv')")
+</div>
+
+<!-- 物料选择对话框 -->
+<div class="easyui-dialog" id="ProdPartSelectDiv" closed="true" data-options="buttons:'#prodPartSelect',modal:true"></div>
+<div id="prodPartSelect">
+    @UserHelpers.ButtonForChoose("SelProdPartAndCloseDialogFun('PPNo', 'ProductPartNo', 'PName', editRow, 'ProdPartSelectDiv')")
+    @UserHelpers.ButtonForClose("CloseDialogFun('ProdPartSelectDiv')")
+</div>
+<!-- *************************************************************** 子查询画面END ******************************************************** -->

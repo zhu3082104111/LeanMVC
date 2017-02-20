@@ -1,0 +1,42 @@
+﻿@using App_UI.Resource.ViewText.Produce
+@using App_UI.Resource.ClientMessage
+@using App_UI.Areas.Controllers
+@using App_UI.Helper
+@using Model
+<div class="FunctionButton_Area">
+    @UserHelpers.ButtonForUpdate("show_detail_form_Fun()")
+    @UserHelpers.ButtonForClose("pageClose()")
+    <span style="width: 30px; margin-right: 10%">&nbsp;</span>
+</div>
+@UserHelpers.Line()
+    @UserHelpers.Title(VT_FAWorkticketAll.IndexTitle)
+
+ <div class="div_main">
+        <div id="toolbar" class="div_search">
+            <form id='Search_Form' class="Search_Form"  method='post'>
+                <table class="table_search">
+                <tr>
+                    <td>客户订单号：</td><td>@UserHelpers.Input("CustomOrderNO")</td>
+                    <td>调度单号：</td><td>@UserHelpers.Input("DispatchID")</td>
+                    <td>工票号码：</td><td>@UserHelpers.InputSimple("AssemBillID")</td>
+                   <td></td>
+                </tr>
+                <tr>
+                    <td>产品型号：</td><td>@UserHelpers.InputSimple("ProductType")</td>
+                    <td>生产单元：</td><td>
+                        @UserHelpers.SelectWidget(Constant.MasterSection.DEPT, "ProduceUnit", "ProduceUnit")</td>
+                   <td>是否完结：</td>
+                    <td >@UserHelpers.SelectWidget("00048", "IsOver", "IsOver")</td>
+                        <td>@UserHelpers.ButtonForSearch("search_Btn_Fun()")</td>
+                </tr>
+                </table>
+            </form>
+        </div>
+        <div class="div_datagrid" >
+            <table id="Data_Table"></table>
+        </div>
+        <div class="div_datagrid">
+
+            <table id="complexTable"></table>
+        </div>
+    </div>

@@ -1,0 +1,10 @@
+﻿@model MultiSelectList
+@foreach (var item in Model)
+{
+    @Html.DisplayFor(a=>a)
+    
+    <input id="@item.Value" name="@Html.NameFor(a => a)" type="radio" value="@item.Value" @(item.Selected ? "checked" : "") />  
+    
+    
+    <label for="@item.Value">@item.Text</label>
+}

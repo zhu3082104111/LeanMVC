@@ -1,0 +1,113 @@
+﻿#dlg form * {
+    font-size:12pt;
+}
+.ftitle {
+    font-size:15pt;text-align:center;margin:10px 0;
+}
+.operator {/*操作-超链的样式*/
+    color:blue;font-size:5pt;
+}
+
+.datagrid > div {
+    margin: auto;
+}
+
+.txtDateWidth {
+   width: 105px;
+}
+.txtWidth {
+   width: 100px;
+}
+
+/*对表格样式进行定义*/
+/*.datagrid > div {
+    border-color: #ffffff #a5a3a3 #ffffff #a5a3a3;
+    border-width: thin;
+}*/
+/*#tabContent {
+    border-width:3px;
+    border-color: #f40a0a #f40a0a #f40a0a #f40a0a;
+}*/
+/*设置两个并列表格样式*/
+/*#divFirst div{
+    border-color: #ffffff #a5a3a3 #ffffff #a5a3a3;
+    border-width: 0px 1px 0px 1px;
+}
+#divSecond div{
+    border-color: #ffffff #a5a3a3 #ffffff #ffffff;
+    border-width: 0px 1px 0px 0px;
+}*/
+#divFirst div  .datagrid-wrap, .panel-body, .panel-body-noheader{
+    border-style:solid dotted solid solid;
+    border-color: #ffffff #a5a3a3 #ffffff #a5a3a3;
+    border-width: 0px 1px 0px 1px;
+    background: #fafafa;
+}
+#divSecond div  .datagrid-wrap, .panel-body, .panel-body-noheader{
+    border-style:solid;
+    border-color: #ffffff #a5a3a3 #ffffff #a5a3a3;
+    border-width:0px 1px 0px 0px;
+    background: #fafafa;
+}
+
+
+.datagrid-btable {
+    background: #fafafa;
+}
+
+#tabInput {
+    margin: 0;
+    padding: 0px;
+    border-width: 1px;
+    border-style: solid;
+    border-color: #ffffff #a5a3a3 #a5a3a3 #a5a3a3;
+    background: #fafafa;
+}
+
+#tabInput tr.view td{
+    border-color: #a5a3a3;
+    border-width: 0 1px 1px 0;
+    border-style: dotted;
+    margin: auto;
+    padding: 0;
+}
+
+.datagrid-row-editing .datagrid-cell {
+    /*height: auto;*/
+    height: 25px;
+}
+
+#tabFoot {
+    text-align: center;
+    margin: auto;
+    width:967px
+}
+
+#tabHeader {
+    /*margin: 0;
+    padding: 2px;
+    border-width: 1px;
+    border-style: solid;
+    border-color: #ffffff #a5a3a3 #a5a3a3 #a5a3a3;
+    background: #fafafa;*/
+    color:#0f5c80;
+	font-size:15px;
+	font-weight:700;	
+	filter: alpha(opacity=100, finishopacity=100, style=1, startx=0,starty=0,finishx=0,finishy=150) progid:DXImageTransform.Microsoft.gradient(startcolorstr='#f6f6f6',endcolorstr='#d8d8da',gradientType=0);
+    /*-ms-filter: alpha(opacity=100 finishopacity=100 style=1 startx=0,starty=0,finishx=0,finishy=150) progid:DXImageTransform.Microsoft.gradient(startcolorstr='#f6f6f6',endcolorstr='#d8d8da',gradientType=0); *//*IE8*/
+    background: -moz-linear-gradient(top, #f6f6f6, rgba(216, 216, 218, 1));
+    background: -webkit-gradient(linear, 0 0, 0 bottom, from(#f6f6f6), to(rgba(216, 216, 218, 1)));
+
+    border-width: 1px 1px 0px 1px;
+    border-style: solid;
+    border-color: #a5a3a3 #a5a3a3 #ffffff #a5a3a3;
+}
+
+#tabHeader td {
+    border-color: #a5a3a3;
+    border-width: 0 1px 1px 0;
+    border-style: dotted;
+    margin: 0;
+    padding: 0;
+}
+

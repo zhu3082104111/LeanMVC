@@ -1,0 +1,233 @@
+﻿@{
+    ViewBag.Title = "Index";
+}
+@using App_UI.Resource.ViewText.Store
+<style>
+#tablesearch {
+        margin:auto;
+       
+        text-align:left;
+    }
+
+ .datagrid td.datagrid-td-merged > div
+       {
+           height:100%;
+       }
+
+</style>
+ 
+<script type="text/javascript" src="~/Scripts/common/dialog.js"></script>
+<!--上面的页面导航-->
+<div class="buttons" style="width:100%;text-align:right;">
+    <!--  新增 -->
+    @UserHelpers.ButtonForCreate("addFun()")
+    <!--  删除 -->
+    @UserHelpers.ButtonForDelete("deleteFun()")
+    <!--  关闭 -->
+    @UserHelpers.ButtonForClose("parent.closeTab(gTitle)")
+    <span style="width:100px;margin-right:10%">&nbsp;</span>
+</div>
+<!--分割线-->
+@UserHelpers.Line()
+<!--界面-->
+<div style="width:100%;text-align:center;margin-bottom:10px;">
+        @UserHelpers.Title(@VT_FinOutRecord.FinOutRecordTitle)
+</div>
+
+<div style="width:100%;text-align:center;margin-bottom:10px;">
+    <div style="width:83%;margin:auto;text-align:left;">
+        <form id="searchForm" class="Search_Form" method='post'>
+           <table id="tablesearch">
+                <tr>
+                <td>@VT_FinOutRecord.InerFinOutID：</td>
+                <td>
+                    @UserHelpers.InputSimple("InerFinOutID",20)
+                </td>
+                <td style="padding-left: 20px">@VT_FinOutRecord.LadiID：</td>
+                <td>
+                    @UserHelpers.InputSimple("LadiID",20)
+                </td>
+                <td style="padding-left: 20px">@VT_FinOutRecord.OutDate：</td>
+                <td>
+                    @UserHelpers.TimeInput("OutDate1")
+                </td>
+                <td>
+                    ~@UserHelpers.TimeInput("OutDate2")
+                </td>
+                </tr>
+                <tr> 
+                <td>@VT_FinOutRecord.ClientOrderID：</td>
+                <td>
+                    @UserHelpers.InputSimple("ClientOrderID")
+                </td>
+                <td style="padding-left: 20px">@VT_FinOutRecord.PartAbbrevi：</td>
+                <td>
+                    @UserHelpers.Input("PartAbbrevi","ShowProdPartInfoScreen();")
+                    <input type="hidden" id="PartId" name="PartId"/>
+                </td>
+                <td>
+                    @*<Label id="idnumber" style="width:60px;">sdsdfsf</Label>*@
+                    <input id="PName" name="PName" disabled="disabled"/>
+                </td>
+                <td></td>
+                <td style="text-align: right">
+                    @UserHelpers.ButtonForSearch("searchFun1()")
+                </td>
+                </tr>
+              </table>
+        </form>
+    </div>
+</div>
+
+<div class="datagrid">
+    <table id="finOutRecordTable"></table> 
+</div>
+
+<!-- 物料选择对话框 -->
+<div class="easyui-dialog" id="ProdPartSelectDiv" closed="true" data-options="buttons:'#prodPartSelect',modal:true"></div>
+<div id="prodPartSelect">
+    @UserHelpers.ButtonForChoose("SelProdPartAndCloseDialogFun('PartId', 'PartAbbrevi', 'PName', '0', 'ProdPartSelectDiv')")
+    @UserHelpers.ButtonForClose("CloseDialogFun('ProdPartSelectDiv')")
+</div>
+
+@section head{
+    <link rel="stylesheet" href="~/Content/css/Store/EndProOutRecord.css" /> 
+<script>
+
+    //放大镜文本框点击事件
+    var SearchBox = function () { };
+
+    var table;  //显示数据的表的标志
+    var form;  //搜索标志
+    
+    /***********operations start***************/
+
+    //详细跳转  跳转到出库履历详细画面
+    var detailFun = function (id,lid,whkpID,outDate,remarks) {
+        var date;
+        var strDt = (outDate + "").replace(/\/Date\(/, "").replace(/\)\//, "");
+        if (isNaN(strDt)) {
+            date = strDt.ToDate();
+        } else {
+            date = new Date(strDt.ToInt());
+        }
+        var str = date.Format("yyyy-MM-dd");
+        parent.addTab("内部成品库出库履历详细", "/Store/FinOutRecord/FinOutRecordDetls?inerFinOutID=" + id + "&LadiID=" + lid + "&whkpID=" + whkpID + "&outDate=" + str + "&remarks=" + remarks);
+    };
+
+    //新增跳转  跳转到出库履历详细画面
+    var addFun = function () {
+      
+        parent.addTab("内部成品库出库履历详细", "/Store/FinOutRecord/FinOutRecordDetlsEdit?flg=1");
+    };
+
+    // 【物料选择按钮】按下
+    var ShowProdPartInfoScreen = function () {
+        ShowProdPartInfo("ProdPartSelectDiv", "", "");
+    }
+
+    //删除操作
+    var deleteFun = function () {
+        var row = $(table).datagrid('getSelections');
+        if (row.length > 0) {
+            var Check = "";
+            for (var i = 0; i < row.length; i++) {
+                Check += row[i].InerFinOutID + ",";
+            }
+            Check = Check.substring(0, Check.length - 1);
+            $.messager.confirm("友情提示", "您确认要删除这些信息吗？", function (deleteOK) {
+                if (deleteOK) {
+                    $.post("/Store/FinOutRecord/Delete", { InerFinOutID: Check }, function (data) {
+                        var _data = eval('(' + data + ')');//取function得返回值 
+                        if (_data.result == true) {
+                            $(table).datagrid("reload");
+                        } else {
+                            alert("删除失败,请重新操作");
+                            //do something another...
+                        }
+                    });
+                }
+            });
+        };
+
+    };
+
+   //搜索功能
+    var searchFun1 = function () {
+        form.form("submit", {//form提交
+            url: "/Store/FinOutRecord/Get",
+            onSubmit: function (param) {//除表单外的数据(分页)
+                var pager = table.datagrid("getPager");
+                var pagerOptions = $(pager).pagination("options");
+                param.rows = pagerOptions.pageSize;
+                param.page = 1;
+            },
+            success: function (data) {
+                table.datagrid("loadData", eval('(' + data + ')'));//重新加载数据
+            }
+        });
+    };
+  
+    /***********operations end***************/
+
+    //获得列属性
+     var getColumns = function () {
+        //列属性: field(字段名,非空) , title(列名) , width(默认80) , sortable(默认false) , editor(默认null) , formatter(默认-函数)
+        var _columns = [[
+           
+            ["InerFinOutID", "内部成品送货单号", 200, true],
+            ["OutDate", "出库日期", 150, false, { type: "autoComplete", options: { model: "user" } }, function (value, row, index) {
+                var date;
+                var strDt = (value + "").replace(/\/Date\(/, "").replace(/\)\//, "");
+                if (isNaN(strDt)) {
+                    date = strDt.ToDate();
+                } else {
+                    date = new Date(strDt.ToInt());
+                }
+                var str = date.Format("yyyy-MM-dd");
+                row.Addate = str;
+                return str;
+            }],
+            ["Remarks", "备注", 380, false],
+            ["Detail", "选择", null, false, null, function (value, row, index) {
+                var htmlStr = "";
+                htmlStr += ("<input type='button' value='详细' style='font-size:13px;width:60px;height:19px' name='Enabled' onclick=\"" + "detailFun('" + row.InerFinOutID + "','" + row.LadiID + "','"+row.WhkpID+"','"+row.OutDate+"','"+row.Remarks+"','" + "')\" value='" + value + "'\">");
+                return htmlStr;
+
+            }]
+        ]];
+
+        return _columns;
+    };
+
+   
+    $(function () {
+        
+        table = $("#finOutRecordTable");
+        form = $("#searchForm");
+        Common.Functions.createDataGrid({//创建datagrid,详细内容参见functions.js
+            target: "#finOutRecordTable",//table容器,必须
+            url: "/Store/FinOutRecord/Get",//获取数据的地址,必须
+            columns: getColumns(),//列属性,必须
+            checkbox: true,//是否显示checkbox
+            maxWidth: 1200,//最大宽度
+            maxHeight: 300,//最大高度
+            onLoadError: function () {
+                alert("请求服务器失败，请刷新页面重试!");
+            },
+            onCreating: function (data) {//数据成功加载
+                //do something...
+            },
+            loadFilter: function (data) {
+                var _data = {};
+                _data.rows = isUndefined(data.rows) ? data : data.rows;
+                _data.total = isUndefined(data.total)?5:data.total;
+                return _data;
+            }
+        });
+     
+    });
+
+</script>
+    
+    }

@@ -1,0 +1,81 @@
+﻿@using App_UI.Resource.ViewText.Common
+@using App_UI.Resource.ViewText.Purchase
+@using Model
+
+<link rel="stylesheet" href="~/Content/css/Admin/userInfo.css" />
+<script type="text/javascript" src="~/Scripts/common/dialog.js"></script>
+<script type="text/javascript" src="~/Scripts/purchase/DeliveryOrder.js"></script>
+
+<div class="FunctionButton_Area" style="width:100%;text-align:right;">
+    @UserHelpers.ButtonForAdd("creatInfo()")
+    @UserHelpers.ButtonForExamine("auditInfo()")
+    @UserHelpers.ButtonForDelete("deleteFun()")
+    @UserHelpers.ButtonForSave("saveEdit()")
+    @UserHelpers.ButtonForPrintPreview("printPreviewEdit()")
+    @UserHelpers.ButtonForClose("parent.closeTab(gTitle)")
+</div>
+
+<!--分割线-->
+@UserHelpers.Line()
+
+<div style="text-align:center;font-size:20px;">
+    <!-- 页面标题 -->
+    @UserHelpers.Title(@VT_DeliveryOrder.EditTitle)
+</div><br />
+
+<!-- 隐藏项 -->
+    <input type="hidden" id="data" value="@ViewBag.DeliveryOrderID" />
+
+<!-- 搜索块 -->
+<div style="width:100%;text-align:center;margin-bottom:15px;">
+    <div style="width:95%;margin:auto;text-align:left;">
+        <form id="searchForm" method ="post" class="Search_Form" >  
+            <table style="padding-left:150px;"> 
+                <tr>
+                    <td>@VT_DeliveryOrder.RecCompanyID：</td>
+                    <td>@VT_DeliveryOrder.RecCompanyName</td>
+                    <td>@VT_DeliveryOrder.DDate：</td>
+                    <td>
+                        <input id="DeliveryDate" class="easyui-datebox" name="DeliveryDate" value="@ViewBag.DeliveryDate" />
+
+                    </td>
+                    <td>@VT_DeliveryOrder.DOrderID：</td>
+                    <td>@ViewBag.DeliveryOrderID</td>
+                </tr>   
+                <tr>    
+                   <td>@VT_DeliveryOrder.DCompanyID：</td>
+                   <td>
+                       @*<input id='DeliveryCompanyID' class="easyui-searchbox" data-options="searcher:searchBox,prompt:'',menu:'#mm'" name='DeliveryCompanyID' style="width:210px" value="@ViewBag.DeliveryCompanyID" />*@
+                       @*@UserHelpers.Input("DeliveryCompanyName","ShowCompInfoScreen();")*@
+                       @UserHelpers.Input("DeliveryCompanyName","DeliveryCompanyName","ShowCompInfoScreen();","DeliveryCompanyName",@ViewBag.DeliveryCompanyID,"100")                       
+                       <input type="hidden" id="DeliveryCompanyID" name="DeliveryCompanyID"/>                       
+                   </td>
+                   <td>@VT_DeliveryOrder.DUID：</td>
+                   <td>
+                       @*<input id='DeliveryUID' class="easyui-searchbox" data-options="searcher:searchBox,prompt:'',menu:'#mm'" name='DeliveryUID' style="width:140px" value="@ViewBag.DeliveryUID"/>*@
+                       @UserHelpers.Input("DeliveryUID","DeliveryUID",@ViewBag.DeliveryUID,"")
+                   </td>
+                   <td>@VT_DeliveryOrder.TelNo：</td>
+                   <td>
+                       <input id='TelNo' name='TelNo' style="width:120px" value="@ViewBag.TelNo"/>
+                   </td>    
+                  
+                </tr>
+                 </table>
+        </form>
+    </div>
+</div>
+
+<div class="datagrid" style="text-align:center;width:100%;">
+    <table id="DeliveryOrderTable" ></table>
+</div>
+
+
+<!-- *************************************************************** 子查询画面START ******************************************************** -->
+<!-- 供货商选择对话框 -->
+<div class="easyui-dialog" id="DeliSelectDiv" closed="true" data-options="buttons:'#companySelect',modal:true"></div>
+<div id="companySelect">
+    @UserHelpers.ButtonForChoose("SelCompAndCloseDialogFun('DeliveryCompanyID', 'DeliveryCompanyName', '0', 'DeliSelectDiv')")
+    @UserHelpers.ButtonForClose("CloseDialogFun('DeliSelectDiv')")
+</div>
+<!-- *************************************************************** 子查询画面END ******************************************************** -->

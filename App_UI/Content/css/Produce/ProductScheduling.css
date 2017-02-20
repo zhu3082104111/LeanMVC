@@ -1,0 +1,36 @@
+﻿ .datagrid > div 
+ {
+	 margin:auto;
+ }
+.searchspan
+{
+    display:inline-block;
+    width:90px;
+}
+.columnButton
+{
+    /*background-color:gray;*/
+    width:25px;
+    height:25px;
+	border:0;
+	background:url(../../Loading/按钮合集.png) no-repeat -65px -153px;
+	cursor:pointer;
+    /*border-style:outset;*/
+    /*border-radius: 5px; background:gray;*/
+}
+/*消除文件，文件夹icon*/
+.datagrid-cell span.tree-folder,.datagrid-cell span.tree-file
+{
+        background: url() ;
+}
+/*折叠后icon设为+*/
+.datagrid-cell span.tree-collapsed
+{
+    background:  url('../../../Scripts/js/themes/default/images/datagrid_icons.png') no-repeat -32px center;
+       
+}
+/*展开后icon设置为-*/
+.datagrid-cell span.tree-expanded
+{
+        background:  url('../../../Scripts/js/themes/default/images/datagrid_icons.png') no-repeat -48px center;
+}

@@ -1,0 +1,169 @@
+﻿<link rel="stylesheet" href="~/Content/css/Store/WipStore.css">
+<script>
+    var tableName = "#userTable";//待修改
+    var formName = "#searchForm";//待修改
+
+
+    function SearchBox(value, name) {
+        alert(value + ":" + name)
+    }
+
+    function printFun() {
+        window.print();
+    }
+
+    function saveFun() {
+        alert("保存功能");
+    }
+
+
+    function radioFun(value) {
+        alert(value + "单选功能");
+    }
+
+    //关闭窗体
+    function CloseFun() {
+        parent.closeTab(gTitle)
+    }
+
+    var columns = [//["field","title",width,rowspan,colspan,sortable,editor,formatter(v,r,index){}]
+         [//第一行
+             ["PdtName", "产品名称", null, 2, null],
+             ["TecnProcess", "加工工艺", 120, 2, null],
+             ["Unit", "单位", 50, 2, null],
+             [null/*此处不要写字段名，null或空字符即可，否则会出错*/, "交仓数量", null, null, 6],
+             ["Rmrs", "备注", 90, 2, null, null, { type: "text" }, function (value, row, index) {
+                var date;
+                date = new Date();
+                var str = date.Format("yyyy年MM月dd日");
+                row.Paydate = str;
+                if (row.ProcUnit != undefined) {
+                    document.getElementById("ProcUnit").innerHTML = row.ProcUnit;
+                    document.getElementById("Paydate").innerHTML = str;
+                    document.getElementById("UID").innerHTML = row.UID;
+                    document.getElementById("UID1").innerHTML = row.UID1;
+                    document.getElementById("WhkpID").innerHTML = row.WhkpID;
+                    if (row.PrintFlg == "1") {
+                        document.getElementById("PrintState").innerHTML = "(补印)";
+                    } else {
+                        //document.getElementById("PrintState").innerHTML = "(补印)";
+                    }
+                }
+                return value;
+            }]
+         ], [//第二行
+             ["Qty", "合格", null, null, null, true, true], ["ProScrapQty", "报废"], ["ProMaterscrapQty", "料废"],
+             ["ProOverQty", "余料"], ["ProLackQty", "缺料"], ["ProTotalQty", "合计"]
+         ]
+    ]
+
+    $(function () {
+        var preview_pdtID = $("#preview_pdtID").val();
+        var preview_deliveryOrderID = $("#preview_deliveryOrderID").val();
+        Common.Functions.createDataGrid({//创建datagrid,详细内容参见functions.js
+            target: tableName,
+            url: "/Store/WipInPrint/WipInPrintPreview?pdtID=" + preview_pdtID + "&deliveryOrderID=" + preview_deliveryOrderID + "",
+            columns: columns,
+            showFooter: true,
+            rownumbers: true,
+            nowrap: false,
+            idField: "PdtID",
+            //toolbar: $("#toolbar"),//工具栏 
+            maxWidth: 950,
+            maxHeight: 500,
+            pagination: false,
+            onBeforeLoad: function (queryParams) {//可以添加一些额外参数,主要用于查询条件
+                var arr = $(formName).serializeArray();
+                $.each(arr, function () {
+                    queryParams[this.name] = this.value;
+
+                });
+            },
+            onLoadError: function () {
+                $.messager.alert("友情提示", "请求服务器失败，请刷新页面重试! ");
+            },
+            onCreating: function (data) {
+                //do something...
+           
+
+            }
+            //}, loadFilter: function (data) {
+            //    var _data = {};
+            //    _data.rows = data.rows ? data.rows : data;
+            //    _data.footer = [{ SupplierName: "sum" }];
+            //    return _data;
+            //}
+        });
+    });
+
+</script>
+
+<style>
+.Search_Table {
+        margin:auto;      
+        text-align:left;
+    }
+</style>
+
+<div class="buttons" style="width:100%;text-align:right;"><br />
+     @UserHelpers.ButtonForPrint("printFun()")
+     @UserHelpers.ButtonForClose("CloseFun()")
+    <span style="width:100px;margin-right:10%">&nbsp;</span>
+</div>
+<div style="width:100%;margin:20px 0;">
+    <hr style="width:100%;color:#95B8E7"/>
+</div>
+<div style="width:100%;text-align:center;">
+    <h2>加工产品入库单&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<label id='PrintState' style="width:120px" aria-setsize=30></label></h2>
+</div>
+
+<div style="width:100%;text-align:center;margin-bottom:12px;">
+    <div style="width:95%;margin:auto;text-align:left;">
+    <form id='searchForm' method='post'>
+        <table class='Search_Table'>
+                <tr>
+                <td>加工单位：</td>
+                <td>
+                <label id='ProcUnit' style="width:120px"></label>
+                </td>
+                <td></td>
+                <td>
+                </td>
+                <td style="padding-left: 400px">开单日期：</td>
+                <td>
+                 <label id='Paydate' style="width:120px"></label> 
+                </td>               
+                </tr>               
+              </table>   
+    </form>        
+</div>
+   </div>
+<div class="datagrid" style="text-align:center;width:100%; overflow:hidden">
+    <table id="userTable"></table>
+</div>
+<div style="width:100%;text-align:center;margin-bottom:12px;">
+    <div style="width:95%;margin:auto;text-align:left;">
+    <form class="Search_Form" id='searchForm1' method='post'>
+         <table class='Search_Table'>
+                <tr>
+                <td>质检：</td>
+                <td>
+                <label id='UID' style="width:120px"></label>
+                </td>
+                <td style="padding-left: 260px">经办人：</td>
+                <td>
+                 <label id='UID1' style="width:120px"></label>
+                </td>
+                <td style="padding-left: 260px">仓管：</td>
+                <td>
+                 <label id='WhkpID' style="width:120px"></label>
+                </td>                
+                </tr>               
+              </table>   
+    </form>
+</div>
+</div>     
+
+<input id="preview_pdtID" type="hidden" value="@ViewBag.preview_pdtID" />
+<input id="preview_deliveryOrderID" type="hidden" value="@ViewBag.preview_deliveryOrderID" />
+

@@ -1,0 +1,23 @@
+﻿/*搜索Form中各div之间的距离*/
+#searchForm > div
+{
+    margin-bottom: 5px;
+}
+
+/*显示结果样式设置*/
+.datagrid
+{
+    width: 100%;
+    text-align: center;
+}
+    /* 显示结果中table的外边距样式设置**/
+    .datagrid > div
+    {
+        margin: auto;
+    }
+
+/* 日期控件的宽度控制**/
+.easyui-datebox
+{
+    width: 110px;
+}

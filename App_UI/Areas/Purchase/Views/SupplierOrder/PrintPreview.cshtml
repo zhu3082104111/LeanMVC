@@ -1,0 +1,183 @@
+﻿@using App_UI.Resource.ViewText.Common
+@using App_UI.Resource.ViewText.Purchase
+@*
+   *
+   *   外协调度单打印预览画面
+   *
+*@
+<script >
+    ////显示调度单信息Form
+    //var formName = "#inforForm";
+    //显示数据的表的标志
+    var tableName = "#supplierOrderTable";
+
+    //物料编码、产品名称、加工工艺、单位、数量、单价、估价、交货日期、备注（老型号）
+    //列属性:field,title,width,sortable,editor,formatter
+    var columns = [[
+        ["ProductAbbrev", "编码", 130, false],
+        ["ProductName", "产品型号", 130, false],
+        ["MaterialsSpecReq", "材料规格及型号", 100, false],
+        ["PdProcDtID", "加工工艺", 100, false],
+        ["ReqQty", "数量", 100, false],
+        ["PriceUp", "单价", 90, false],
+        ["Evaluate", "估价", 90, false],
+        ["DlyDate", "交货日期", 100, false, , function (value, row, index) {
+            var date;
+            var strDt = (value + "").replace(/\/Date\(/, "").replace(/\)\//, "");
+            if (isNaN(strDt)) {
+                date = strDt.ToDate();
+            } else {
+                date = new Date(strDt.ToInt());
+            }
+            var str = date.Format("yyyy-MM-dd");
+            row.DlyDate = str;
+            return str;
+        }],     
+        ["Remarks", "备注(版本号)", 130, false]
+    ]]
+
+    //打印
+    var printFun = function () {
+        $.messager.confirm("", "您确定要打印本页面的信息吗？", function (reviewOK) {
+            if (reviewOK) {
+                $.post("/Purchase/SupplierOrder/Print", { supplierOrderId: "@ViewBag.supplierOrderId" }, function (data) {
+                    var _data = eval('(' + data + ')');
+                    console.info(_data);
+                    if (_data.Result == true) {
+                        self.print();
+                    } else {
+                        $.messager.alert("信息", _data.Message, "info");
+                    }
+                });
+            }
+        })
+    }
+
+    $(function () {
+        Common.Functions.createDataGrid({
+            target: $("#supplierOrderTable"),
+            url: "/Purchase/SupplierOrder/ShowSupplierOrderDetail?supplierOrderId=@ViewBag.supplierOrderId",
+            columns: columns,
+            //toolbar: $("#toolbar"),
+            pagination:false,//不要分页
+            maxWidth: 1200,
+            maxHeight: 200,    
+            onLoadError: function () {
+                alert("请求服务器失败，请刷新页面重试！");
+            },     
+            onCreating: function (data) {
+  
+            },loadFilter: function (data) {
+                var _data = {};
+                _data.rows = isUndefined(data.rows) ? data : data.rows;
+                _data.total = isUndefined(data.total) ? data : data.total;
+                return _data;
+            }
+        });
+
+      });
+</script>
+
+<div class="buttons" style="width:100%;text-align:right;"> 
+    <!-- 打印 -->
+    @UserHelpers.ButtonForPrint("printFun()")
+    <!-- 关闭 -->
+    @UserHelpers.ButtonForClose("parent.closeTab(gTitle)")    
+    <span style="width:100px;margin-right:10%">&nbsp;</span>
+</div>
+<!--  分割线 -->
+@UserHelpers.Line()
+<br />
+<div style="text-align:center;font-size:20px;">
+    @if (ViewBag.OrderType == "1") {
+        <h2>@VT_SupplierOrderPrint.SupplierProcessingOrder</h2>  
+   }else{
+        <h2>@VT_SupplierOrderPrint.SupplierInjectionOrder</h2>    
+   }
+</div><br />
+<div style="width :100%;text-align :center;margin-bottom :10px;">
+    <div style="">
+   <table id="infor_table" style="margin:auto; text-align: left;">
+        <tr>
+            <!-- 外协单单号 -->
+            <td><span>
+                @if (ViewBag.OrderType == VT_SupplierOrderPrint.ProcessOrderValue)
+                {
+                    <!-- 外协加工调度单 -->
+                    @VT_SupplierOrderPrint.SupplierProcessingOrder  
+                }
+                else
+                {
+                    <!-- 外协加工注塑单 -->
+                    @VT_SupplierOrderPrint.SupplierInjectionOrder
+                }@VT_SupplierOrderPrint.No：
+            </span>
+                <label id="SupOrderId" >@ViewBag.supplierOrderId</label></td>
+            <!-- 下单日期 -->
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <span>@VT_SupplierOrderList.MarkDate：</span>                          
+                    <label>@ViewBag.MarkUserSignDate</label></td>
+        </tr>
+        <tr>
+            <!-- 所属部门 -->
+            <td>
+                <span>@VT_SupplierOrderList.BelongDepartment：</span>
+                <label>@ViewBag.departmentId</label>
+            </td>
+            <!-- 当前状态 -->
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <span>@VT_SupplierOrderList.CurrentStatus：</span>                          
+                    <label>@ViewBag.supplierOrderStatus</label></td>
+            <!-- 紧急状态 -->
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <span>@VT_SupplierOrderList.UrgentStatus：</span>
+                <label>@ViewBag.UrgentStatus</label>
+            </td>      
+        </tr>
+        <tr>
+            <!-- 调入单位  -->
+            <td><span>@VT_SupplierOrderList.InCompany：</span>
+                <label>@ViewBag.InCompanyId</label>
+            </td>
+            <!-- 调出单位 -->
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <span>@VT_SupplierOrderList.OutCompany：</span>
+                <label>@VT_Common.CompanyName</label>
+            </td>
+        </tr>
+    </table>       
+</div>
+
+<!-- 需要打印的数据 -->
+<div class="datagrid" >
+    <table id="supplierOrderTable"></table>  
+</div>
+<!-- 相关人员及对数据操作的时间 -->
+<div class="footOrder" style="text-align: center; width: 100%;margin-top :20px;">
+    <div style="">
+        <table id ="foot_table" style ="margin: auto; text-align: left;">
+            <tr>
+                <!--  生产主管 -->
+                <td><span>@VT_SupplierOrderList.ProduceManager：</span></td>
+                <td>
+                    <label>@ViewBag.ProduceManager</label></td>
+                <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    <span style ="margin-left :100px;">@VT_SupplierOrderList.MarkUser：</span></td>
+                <!--  制单人  -->
+                <td >
+                    <label>@ViewBag.MarkUser</label></td>
+                <td> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    <span style ="margin-left :100px;">@VT_SupplierOrderPrint.Operator：</span></td>
+                <!--  经办人 -->
+                <td>
+                    <label>@ViewBag.Operator</label></td>
+            </tr>
+        </table>
+    </div>
+</div>
+    </div>

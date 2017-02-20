@@ -1,0 +1,241 @@
+﻿<link rel="stylesheet" href="~/Content/css/Store/AccStore.css">
+<script>
+
+    var tableName = "#userTable";//待修改
+    var formName = "#searchForm";//待修改
+    var endEditFlg = "";//结束编辑FLG
+
+    //保存功能
+    var saveInfos = function () {
+        $.messager.confirm("友情提示", "确认入库?", function (updateOK) {
+            if (updateOK) {
+                var row = $(tableName).datagrid('getRows');
+                if (row.length > 0) {
+                    //定义一个数组用于存放table中的数据
+                    var orderList = [];
+                    for (var i = 0 ; i < row.length; i++) {
+                        if (row[i].AccLoginFlg == "") {
+                            $(tableName).datagrid("endEdit", i);
+                            if (row[i].PrchsUp != "" || row[i].Qty != "") {
+                                var order = {};
+                                order["RowIndex"] = i;
+                                order["PrhaOdrID"] = row[i].PrhaOdrID;
+                                order["DeliveryOrderID"] = row[i].DeliveryOrderID;
+                                order["BthID"] = row[i].BthID;
+                                order["McIsetInListID"] = row[i].McIsetInListID;
+                                order["IsetRepID"] = row[i].IsetRepID;
+                                order["GiCls"] = row[i].GiCls;
+                                order["PdtName"] = row[i].PdtName;
+                                order["PdtSpec"] = row[i].PdtSpec;
+                                order["Qty"] = row[i].Qty;
+                                order["Unit"] = row[i].Unit;
+                                order["PrchsUp"] = row[i].PrchsUp;
+                                order["NotaxAmt"] = row[i].NotaxAmt;
+                                order["InDate"] = row[i].InDate;
+                                order["Rmrs"] = row[i].Rmrs;
+                                order["AccLoginPriceFlg"] = row[i].AccLoginPriceFlg;;
+
+                                //将order加进orderList
+                                orderList.push(order);
+                            } else {
+                                $.messager.alert("友情提示", "有单价或数量没有填写！");
+                            }
+
+                        }
+                    }
+                    MymergeCells();
+                    $.ajax({
+                        async: true,
+                        url: "/Store/AccInStore/SaveAccInForLogin",
+                        data: { orderList: orderList },
+                        type: "post",
+                        success: function (data) {
+                            var _data = eval('(' + data + ')');
+                            if (_data.Result == true) {
+                                endEditFlg = "0";
+                                endEditInfons();//保存成功，结束编辑      
+                                MymergeCells();                                                      
+                                $.messager.alert("信息", "保存成功！");
+                            } else {
+                                endEditFlg = "";
+                                $.messager.alert("信息", _data.Message);
+                                //do something another...
+                            }
+                        }
+                    });
+                    console.info(rowData);
+                }
+            }
+           // MymergeCells();
+        });
+      
+    }
+
+    //获取可编辑行
+    vareditorInfons = function () {
+        var row = $(tableName).datagrid('getRows');
+        if (row.length > 0) {
+            for (var i = 0 ; i < row.length; i++) {
+             
+                if (row[i].AccLoginFlg == "" && endEditFlg == "") {
+                    $(tableName).datagrid("beginEdit", i);
+                }
+            }
+        }
+    }
+
+    //结束编辑行
+    endEditInfons = function () {
+        var row = $(tableName).datagrid('getRows');
+        if (row.length > 0) {
+            for (var i = 0 ; i < row.length; i++) {
+                if (row[i].AccLoginFlg == "") {
+                    $(tableName).datagrid("endEdit", i);
+                }
+            }
+        }
+    }
+
+    //取消编辑
+    var cancelInfos = function () {
+        editRow = undefined;
+        $(tableName).datagrid("rejectChanges");
+        $(tableName).datagrid("unselectAll");
+    }
+
+    //合并单元格
+    var merged = false;
+    var MymergeCells = function () {
+        setTimeout(function () {
+            if (!merged) {
+                mergeCells({ fields: ["PrhaOdrID", "DeliveryOrderID", "BthID", "McIsetInListID"], target: tableName });
+                merged = true;
+            } else {
+                merged = false;
+            }
+        }, 10);
+    }
+
+    //单选功能
+    function radioFun(value) {
+        alert(value + "单选功能");
+    }
+
+    //关闭窗体
+    function CloseFun() {
+        parent.closeTab()
+    }
+
+
+
+    var columns = [[//["field","title",width,rowspan,colspan,sortable,editor,formatter(v,r,index){} 
+       ["IsetRepID", "检验报告单号", 100, null, null, false],
+       //["AccLoginFlg", "测试数据", 100, null, null, false],
+       ["GiCls", "让步区分", 100, true, true, function (value, row, index) {
+           var htmlStr = "";
+           if (row.GiCls == "999") {
+               htmlStr = "正常";
+           } else {
+               htmlStr = "内径过大";
+           }
+           return htmlStr;
+       }],
+       ["PdtName", "物资名称", 130, null, null, false],
+       ["PdtSpec", "规格型号", 100, null, null, false],
+       ["Qty", "数量", 80, true, { type: "text" }, function (value, row, index) {
+           return value;
+       }],
+       ["Unit", "单位", 50, null, null, false],
+       ["PrchsUp", "单价", 60,true , { type: "text" }, function (value, row, index) {
+           return value;
+       }],
+       ["NotaxAmt", "金额", 110, true, true, function (value, row, index) {          
+           var notaxAmtValue = "";
+           notaxAmtValue = row.Qty * row.PrchsUp
+           row.NotaxAmt = notaxAmtValue
+           return row.NotaxAmt;
+       }], 
+       ["InDate", "入库日期", 120, true, true, function (value, row, index) {
+           var date;
+           var strDt = (value + "").replace(/\/Date\(/, "").replace(/\)\//, "");
+           if (isNaN(strDt)) {
+               date = strDt.ToDate();
+           } else {
+               date = new Date(strDt.ToInt());
+           }
+           var str = date.Format("yyyy-MM-dd");
+           row.Paydate = str;
+           return str;
+       }],
+       ["Rmrs", "备注", 100, true, { type: "text" }, function (value, row, index) {
+           return value;
+       }]
+
+    ]];
+
+    $(function () {
+        var accInLogin_deliveryOrderID = $("#AccInLogin_deliveryOrderID").val();
+        var accInLogin_isetRepID = $("#AccInLogin_isetRepID").val();
+        Common.Functions.createDataGrid({//创建datagrid,详细内容参见functions.js
+            target: tableName,
+            url: "/Store/AccInStore/GetAccInLogin?deliveryOrderID=" + accInLogin_deliveryOrderID + "&isetRepID=" + accInLogin_isetRepID + "",
+            columns: columns,
+            frozenColumns: [[{ field: 'PrhaOdrID', title: '采购订单号', width: 140, align: 'center', rowspan: 2 },
+                            { field: 'DeliveryOrderID', title: '送货单号', width: 140, align: 'center', rowspan: 2 },
+                            { field: 'BthID', title: '批次号', width: 140, align: 'center', rowspan: 2 },
+                            { field: 'McIsetInListID', title: '物资验收入库单号', width: 160, align: 'center', rowspan: 2 }
+            ]] ,
+            idField: "IsetRepID",
+            toolbar: $("#toolbar"),//工具栏 
+            nowrap: false,
+            //checkbox: true,//是否显示checkbox
+            maxWidth: 950,
+            maxHeight: 300,
+            onBeforeLoad: function (queryParams) {//可以添加一些额外参数,主要用于查询条件
+                var arr = $(formName).serializeArray();
+                $.each(arr, function () {
+                    queryParams[this.name] = this.value;
+                });
+            },
+            onLoadError: function () {
+                $.messager.alert("友情提示", "请求服务器失败，请刷新页面重试! "); 
+            },
+            onCreating: function (data) {
+                //合并单元格
+                MymergeCells();
+                //获取编辑行
+                vareditorInfons();
+                //do something...
+            }
+        });   
+    });
+  
+
+</script>
+
+<div class="buttons" style="width:100%;text-align:right;"><br />
+      @UserHelpers.ButtonForSave("saveInfos()")   
+      @UserHelpers.ButtonForClose("CloseFun()")  
+
+    <span style="width:100px;margin-right:10%">&nbsp;</span>
+</div>
+<div style="width:100%;margin:20px 0;">
+    <hr style="width:100%;color:#95B8E7"/>
+</div>
+<div style="width:100%;text-align:center;">
+    <h2>入库登录</h2>
+</div>
+
+<div class="datagrid" style="text-align:center;width:100%;">
+    <table id="userTable"></table>
+</div>
+<div id="toolbar" style='display:none'>
+    <form id='searchForm' method='post'>
+        <br/>
+        &nbsp;&nbsp;入库区分：<input id="In" type="radio" checked="checked" value="入库" onclick='radioFun(id);' name="rangbu"/>入库&nbsp;&nbsp;&nbsp;<input id="move" type="radio" value="移库"  onclick='    radioFun(id);' name="rangbu"/>移库<br />
+    </form>
+</div>
+<input id="AccInLogin_deliveryOrderID" type="hidden" value="@ViewBag.AccInLogin_deliveryOrderID" />
+<input id="AccInLogin_isetRepID" type="hidden" value="@ViewBag.AccInLogin_isetRepID" />
+
+

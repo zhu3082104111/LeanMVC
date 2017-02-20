@@ -1,0 +1,55 @@
+﻿#dlg form * {
+    font-size: 12pt;
+}
+
+.ftitle {
+    font-size: 15pt;
+    text-align: center;
+    margin: 10px 0;
+}
+
+.operator { /*操作-超链的样式*/
+    color: blue;
+    font-size: 5pt;
+}
+
+.datagrid > div {
+    margin: auto;
+}
+
+.txtDateWidth {
+    width: 105px;
+}
+
+.txtWidth {
+    width: 100px;
+}
+/*div 制作表格样式*/
+.table {
+    display: table;
+    width: 100%;
+    /*border-collapse:separate;*/
+}
+
+.row {
+    display: table-row;
+}
+
+.row div {
+    display: table-cell;
+    height: 30px;
+    vertical-align: middle;
+}
+
+/*消除文件，文件夹icon*/
+.datagrid-cell span.tree-folder, .datagrid-cell span.tree-file {
+    background: url();
+}
+/*折叠后icon设为+*/
+.datagrid-cell span.tree-collapsed {
+    background: url('../../../Scripts/js/themes/default/images/datagrid_icons.png') no-repeat -32px center;
+}
+/*展开后icon设置为-*/
+.datagrid-cell span.tree-expanded {
+    background: url('../../../Scripts/js/themes/default/images/datagrid_icons.png') no-repeat -48px center;
+}

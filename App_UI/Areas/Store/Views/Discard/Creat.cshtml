@@ -1,0 +1,457 @@
+﻿ @using App_UI.Resource.ViewText.Common
+@using App_UI.Resource.ViewText.Purchase
+@using Model
+
+<style type="text/css">
+    .Onblue_style
+    {
+        font-size:17px;
+        height:15px;
+        font-family:Tahoma,Verdana,微软雅黑,新宋体;
+
+    }
+    .txt_boxStyle
+    {
+        /*background:rgb(224,224,224);*/
+        BACKGROUND-COLOR: transparent;
+        border:none;
+        color:black;
+        font-family:Tahoma,Verdana,微软雅黑,新宋体;
+        
+
+    }
+    .imgstyle
+    {
+        opacity:0;
+    }
+
+</style>
+
+@*<script type="text/javascript" src="~/Scripts/common/dialog.js"></script>*@
+@{
+    ViewBag.Title = "Creat";
+}
+<link rel="stylesheet" href="~/Content/css/Store/ProductScrapped.css" />
+<!--buttons-->
+<div class="buttons" style="width: 100%; text-align: right;">
+    
+        <input type='button' style='font-size: 15px; height: 25px;' value='登录' id='login' onclick='loginFun();'>
+        <input type='button' style='font-size: 15px; height: 25px;' value='编辑' id='edit' onclick='editFun();' disabled="disabled">
+        <input type='button' style='font-size: 15px; height: 25px;' value='打印预览' id='print' onclick='printFun();' disabled="disabled">  
+      
+   
+    <a href='javascript:void(0);' class='easyui-linkbutton' iconcls='icon-add' onclick='closeFun();'>关闭</a>
+    <span style="width: 100px; margin-right: 10%">&nbsp;</span>
+</div>
+
+<!--line-->
+<div style="width: 100%; margin: 20px 0;">
+    <hr style="width: 100%; color: #95B8E7" />
+</div>
+<!--content-->
+<div style="width: 100%; text-align: center; margin-bottom: 15px;">
+  
+</div>
+<div style="width: 100%; text-align: center; margin-bottom: 14px;">
+    <span id="mainTitle">在库品报废申请详细</span>
+</div>
+
+<div style="width: 100%; text-align: center;">
+    <div style="width: 53%; margin: auto; text-align: right;">
+        <form id="processForm" method='post'>
+            <div>
+                <span style="margin-left: 20px;" id="DisardId">报废单号：@ViewBag.autoNo</span>
+                <input type='button' style='font-size: 15px; height: 25px;' value='追加行' id='add' onclick='addNewRow();'>
+              
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="datagrid" style="margin-bottom: 15px;">
+    <table id="CreatTable"></table>
+</div>
+
+<!-- 物料选择对话框 -->
+<div class="easyui-dialog" id="ProdPartSelectDiv" closed="true" data-options="buttons:'#prodPartSelect',modal:true"></div>
+<div id="prodPartSelect">
+    @UserHelpers.ButtonForChoose("SelProdPartAndCloseDialogFun('ProID', 'ProductPartNo', 'PName','BthID','PartDtSpec','PrchsUp','StoreCls','WareHouseID','InDate', editRow, 'ProdPartSelectDiv')")
+    @UserHelpers.ButtonForClose("CloseDialogFun('ProdPartSelectDiv')")
+</div>
+@section head{
+    <script>
+        //单击datagrid所获得的rowindex
+        var pi = 0;
+        var dataRows = 0;
+        
+
+        //登录
+        var loginFun = function () {
+            
+            var c = $("#login").attr("disabled", true);
+            var d = $("#edit").attr("disabled", false);
+            var p = $("#print").attr("disabled", false);
+            var c = $("#add").attr("hidden", true);
+            saveCreate();
+            endEdit();
+
+        };
+
+        //编辑
+        var editFun = function () {
+            var c = $("#login").attr("disabled", false);
+            var d = $("#edit").attr("disabled", true);
+            var p = $("#print").attr("disabled", true);
+            var i = $("#add").attr("disabled", false);
+            vareditorInfons();
+
+        };
+
+
+        
+        //
+        //打开编辑
+        vareditorInfons = function () {
+            $("input:text").attr("disabled", false);//text可编辑
+            $('.Onblue_style').removeClass('txt_boxStyle');//改变css
+            //可以不要，以后要用。
+            var row = $("#CreatTable").datagrid('getRows');
+            dataRows = (dataRows + 1);
+            var i = $("#add").attr("disabled", false);
+            if (row.length > 0) {
+                for (var i = 0 ; i < row.length; i++) {
+                    $("#CreatTable").datagrid("beginEdit", i);
+                }
+            }
+        }
+
+        //结束编辑
+        function endEdit() {
+            var i = 0;
+            $('.img_style').addClass('imgstyle');//改变css
+            $('.Onblue_style').addClass('txt_boxStyle');//改变css
+            $("input:text").attr("disabled", true);//关闭页面可编辑的text
+            
+            while (i < dataRows) {//可以不要，以后要用
+                var ed = $("#CreatTable").datagrid("getEditors", i);
+                //前2列关闭编辑功能
+                for (j = 0; j < 11; j++) {
+                    $("#CreatTable").datagrid("endEdit", i);
+                };
+                i++;
+            };
+        };
+
+        //
+        //保存后的跳转
+        var referringFun = function () {
+            var row = $("#CreatTable").datagrid('getSelections');
+            var selectors = ["input[name=ProductPartNo]"];
+            var s = [];
+            var check = "";//零件号
+            var whId = "";//仓库号
+            var BthID = "";//批次号
+            for (var i = 0; i < row.length; i++) {
+                //找到i行的存放数据的input
+                alert("askdhfkj");
+                var tds = $("div.datagrid-view2").find("div.datagrid-body").find("tr.datagrid-row:eq(" + i + ")").children();
+                //注入SltPlan数据
+                s[i] = $(tds[0]).find(selectors[0]).val();
+                check += s[i] + ",";
+                BthID += row[i].BThId + ",";
+                whId += row[i].WareHouseID + ",";
+            }
+            check = check.substring(0, check.length - 1);
+            BthID = BthID.substring(0, BthID.length - 1);
+            whId = whId.substring(0, whId.length - 1);
+            //跳转到详细页面
+            parent.addTab("报废申请详细", "/Store/Discard/ReferringDetls?flg=0&pdtID=" + check + "&whId=" + whId + "&bthID=" + BthID + "&discardId=@ViewBag.autoNo");
+
+
+        };
+
+        /*********************************************保存****************************************/
+        //保存方法 新建
+        var saveCreate = function (rowIndex, rowData, changes) {
+            var row = $("#CreatTable").datagrid('getRows');//获得datagrid行数
+            var s = [];//用来存放SltPlan数据的数组
+            if (row.length > 0) {
+                //定义一个数组用于存放table中的数据
+                var orderList = [];
+                //定义一个数组用于存放datagrid中的各种input
+                var selectors = ["input[name=ProductPartNo]", "input", "input", "input", "input[name=Quantity]", "", "null",
+                    "input", "input", "input", "input", "input[name=QualityPro]", "input[name=SltPlan]"];
+                for (var i = 0; i < row.length; i++) {
+                    //找到i行的存放数据的input
+                    var tds = $("div.datagrid-view2").find("div.datagrid-body").find("tr.datagrid-row:eq(" + i + ")").children();
+                    //注入SltPlan数据
+                    s[i] = $(tds[11]).find(selectors[12]).val();
+                    var orderk = {};
+                    //得到每行数据
+                    for (var k = 0; k < tds.length; k++) {
+                        orderk[k] = $(tds[k]).find(selectors[k]).val();
+                    }
+
+                    if (orderk["0"] != "") {
+                        var order = {};
+                        order["RowIndex"] = i;
+                        order["PartDtID"] = orderk[0];
+                        order["PartDtName"] = row[i].PartDtName;
+                        order["PartDtSpec"] = row[i].PartDtSpec;
+                        order["BThId"] = row[i].BThId;
+                        order["Quantity"] = orderk[4];
+                        order["PrchsUp"] = row[i].PrchsUp;
+                        order["StoreCls"] = row[i].StoreCls;
+                        order["WareHouseID"] = row[i].WareHouseID;
+                        order["InDate"] = row[i].InDate;
+                        order["QualityPro"] = orderk[10];
+                        order["SltPlan"] = s[i];
+                        orderList.push(order);
+                    }
+                }
+
+                $.ajax({
+                    async: true,
+                    //调用DiscardController中的SaveUpdata方法
+                    url: "/Store/Discard/SaveUpdata?discardId=@ViewBag.autoNo&iid=1",
+                    data: {
+                        DisardId: $("#DisardId").val(),//报废单号
+                        orderList: orderList
+                    },
+                    type: "post",
+                    success: function (data) {
+                        var _data = eval('(' + data + ')');
+                        //数据没有保存
+                        if (_data.Result == false) {
+                            editFun();
+                            $.messager.alert("信息", _data.Message, "info", function () {
+                                window.location.reload();//刷新数据
+                                
+                            });
+                        } else {
+                           
+                            //title：显示在标题面板的标题文本;msg：提示框显示的消息文本;icon：提示框显示的图标,可用的值是：error,question,info,warning;fn：当窗口关闭时触发的回调函数
+                            //数据保存
+                            $.messager.alert("信息", _data.Message, "info", function () {
+                                referringFun();
+                            });
+                            //do something another...
+                        }
+                    }
+                });
+                console.info(rowData);
+            }
+        }
+/*************************************************************end****************************************************************/
+         //增加新行
+        addNewRow = function () {
+            dataRows = (dataRows + 1);
+            var row = $("#CreatTable").datagrid('getRows');
+            $("#CreatTable").datagrid("insertRow", {
+                index: row.length, // index start with 0
+                row: {
+                    
+                }
+            });
+            var index = row.length - 1;
+            //将新插入的那一行开编辑状态
+            $("#CreatTable").datagrid("beginEdit", index);
+            //给当前编辑的行赋值
+            editRow = index;
+         }
+
+
+        //取得总价
+        var TotalAmtfun = function (pp) {
+            //定义一个数组用于存放datagrid中的数据（数量和总价）
+            var selectors = ["input[name=Quantity]", "input[name=TotalAmt]"];
+            //找到此行的所有input
+            var tds = $("div.datagrid-view2").find("div.datagrid-body").find("tr.datagrid-row:eq(" + pi + ")").children();
+            //定义一个数组储存datagrid中的Quantity
+            var s = $(tds[4]).find(selectors[0]).val();
+            $(table).datagrid('getRows')[pp]['TotalAmt'] = s * 13;//取得总价
+            $(table).datagrid("refreshColumn", "TotalAmt");//刷新列
+
+        }
+
+        /********************************************弹出物料编号名称**************************************************/
+        // 【物料选择按钮】
+        var ShowProdPartInfoScreen = function (obj,rowindex) {
+            ShowProdPartInfo("ProdPartSelectDiv", rowindex, "");
+        }
+
+        //-------------------------------------------------------------------------
+        // 显示物料选择画面
+        //
+        // divID：   嵌套供物料选择画面的dialgo的div的ID 
+        // abbrev：物料编号
+        // name：  物料名称
+        //-------------------------------------------------------------------------
+
+        var ShowProdPartInfo = function (divID, rowindex, name) {
+            var url = "/Store/Discard/CreatBthList?rowindex=" + rowindex + "&name=" + name;
+            $("#" + divID).dialog({
+                title: "<span style='font-family:Tahoma,Verdana,微软雅黑,新宋体;font-size:14px;margin:0px;padding:0px;'>物料选择画面</span>",
+                cache: false,
+                resizable: false,
+                //fit: true,
+                height: 400,
+                href: url,
+                modal: true,
+                width: 600,
+                //事件
+                onClose: function () {
+                }
+            });
+            $("#" + divID).dialog("open");
+        };
+
+        //-------------------------------------------------------------------------
+        // 选择物料，返回选中的物料，并关闭物料子查询画面
+        // 
+        // retID:       返回的物料ID（父画面的物料ID<input name="retID">）
+        // retAbbrev:   返回的物料编号（父画面的物料编号<input name="retAbbrev">）
+        // retName：    返回的物料名称（父画面的物料名称<input name="retName">）
+        // ......       .....................
+        // index:       索引（多行时，行号）
+        // divID：      要关闭的div的ID 
+        //-------------------------------------------------------------------------
+        var SelProdPartAndCloseDialogFun = function (retID, retAbbrev, retName,retBthID,retPartDtSpec,retPrchsUp,retStoreCls,retWareHouseID,retInDate, idx, divID) {
+            var cnt = $("#PPInfoTable").datagrid("getSelections").length;
+            if (cnt != 1) {
+                alert("请您选择要报废的零件");
+            } else {
+                var selectedID = $("#PPInfoTable").datagrid("getSelections")[0]["ID"];
+                var selectedAbbrev = $("#PPInfoTable").datagrid("getSelections")[0]["PartDtID"];
+                var selectedName = $("#PPInfoTable").datagrid("getSelections")[0]["PartDtName"];
+                var selectedBthID = $("#PPInfoTable").datagrid("getSelections")[0]["BthID"];
+                var selectedPartDtSpec = $("#PPInfoTable").datagrid("getSelections")[0]["PartDtSpec"];
+                var selectedPricee = $("#PPInfoTable").datagrid("getSelections")[0]["Pricee"];
+                var selectedStoreCls = $("#PPInfoTable").datagrid("getSelections")[0]["StoreCls"];
+                var selectedWareHouseID = $("#PPInfoTable").datagrid("getSelections")[0]["WareHouseID"];
+                var selectedInDate = $("#PPInfoTable").datagrid("getSelections")[0]["InDate"];
+                var Index =parseInt( $("#indexlist").val());
+                // 设定选择的返回值
+                var idArray = $("input[name='" + retID + "']");
+                $(idArray[Index]).val(selectedID);
+                var idArray = $("input[name='" + retAbbrev + "']");
+                $(idArray[Index]).val(selectedAbbrev);
+                var nameArray = $("input[name='" + retName + "']");
+                $(nameArray[Index]).val(selectedName);
+                //物料名称
+                $("#CreatTable").datagrid('getRows')[Index]['PartDtName'] = selectedName;
+                $("#CreatTable").datagrid("refreshColumn", "PartDtName");
+                //批次号
+                $("#CreatTable").datagrid('getRows')[Index]['BThId'] = selectedBthID;
+                $("#CreatTable").datagrid("refreshColumn", "BThId");
+                //规格
+                $("#CreatTable").datagrid('getRows')[Index]['PartDtSpec'] = selectedPartDtSpec;
+                $("#CreatTable").datagrid("refreshColumn", "PartDtSpec");
+                //单价
+                $("#CreatTable").datagrid('getRows')[Index]['PrchsUp'] = selectedPricee;
+                $("#CreatTable").datagrid("refreshColumn", "PrchsUp");
+                //让不区分
+                $("#CreatTable").datagrid('getRows')[Index]['StoreCls'] = selectedStoreCls;
+                $("#CreatTable").datagrid("refreshColumn", "StoreCls");
+                //仓库
+                $("#CreatTable").datagrid('getRows')[Index]['WareHouseID'] = selectedWareHouseID;
+                $("#CreatTable").datagrid("refreshColumn", "WareHouseID");
+                //入库日期
+                $("#CreatTable").datagrid('getRows')[Index]['InDate'] = selectedInDate;
+                $("#CreatTable").datagrid("refreshColumn", "InDate");
+                //关闭弹出框
+                $("#" + divID).dialog("close");
+            }
+        };
+
+        var CloseDialogFun = function (divID) {
+            //关闭弹出框
+            $("#" + divID).dialog("close");
+        }
+
+        /***************************************************************************************************************/
+
+        /***********************************************编辑列属性************************************************************/
+
+            var getCreatColumns = function () {
+                //列属性: field(字段名,非空) , title(列名) , width(默认80) , sortable(默认false) , editor(默认null) , formatter(默认-函数)
+                var Creatcolumns = [[
+
+                    //["PartDtID", "物料编号", null, true, "text"],
+                    ["PartDtID", "物料编号", 130, true, null, function (value, row, index) {
+                        return "<img src='/Scripts/js/themes/icons/search_icon.png' class='img_style' onclick='ShowProdPartInfoScreen(this" + "," + index + ");'/>" +
+                            "<input type='text' name='ProductPartNo' id='ProductPartNo'class='Onblue_style' />" +
+                            "<input type='hidden' id='PPNo' name='PPNo'/>";
+                    }],
+                    ["PartDtName", "物料名称", 120, true, "text"],
+                    ["PartDtSpec", "规格", null, true, "text"],
+                    ["BThId", "批次号", null, true, "text"],
+                    ["Quantity", "数量", 40, false, null, function (value, row, index) {
+                        return ('<input  Onblur="TotalAmtfun(' + index + ')" name="Quantity" class="Onblue_style" id="Quantity"  onkeyup="value=value.replace(\/[^\\d]\/g,\'\')  "  onbeforepaste="clipboardData.setData(\'text\',clipboardData.getData(\'text\').replace(\/[^\\d]\/g,\'\'))">')
+
+                    }
+                    ],
+                    ["PrchsUp", "单价", 50, false, "text"],
+                    ["TotalAmt", "总价", 50, false, null],
+                    ["StoreCls", "让步区分", 70, false,"text"],
+                    ["WareHouseID", "仓库", 130, false, "text"],
+                    ["InDate", "入库日期", 120, false, { type: "datebox" }, function (value, row, index) {
+                        var date;
+                        var strDt = (value + "").replace(/\/Date\(/, "").replace(/\)\//, "");
+                        if (isNaN(strDt)) {
+                            date = strDt.ToDate();
+                        } else {
+                            date = new Date(strDt.ToInt());
+                        }
+                        var str = date.Format("yyyy-MM-dd");
+                        row.Addate = str;
+                        return str;
+                    }],
+                    ["QualityPro", "报废原因", 120, false, null, function (value, row, index) {
+                        return ('<input type="text" class="Onblue_style" id="QualityPro" name="QualityPro">');
+                    }],
+                    ["SltPlan", "处理方案", 80, false, null, function (value, row, index) {
+                        return ('<input type="text" class="Onblue_style" id="SltPlan" name="SltPlan" >');
+                    }]
+
+                ]];
+                return Creatcolumns;
+            }
+
+        /************************************************end***********************************************************/
+            $(function () {
+                table = $("#CreatTable");
+                form = $("#processForm");
+                Common.Functions.createDataGrid({//创建datagrid,详细内容参见functions.js
+                    target: "#CreatTable",//table容器,必须
+                    url: "/Store/Discard/GetApplication?pdtID=@ViewBag.id&whId=@ViewBag.iid&bthID=@ViewBag.BthID&discardId=@ViewBag.iiid",//获取数据的地址
+                    columns: getCreatColumns(),//列属性,必须
+                    //idField: "UId",//标识字段
+                    toolbar: $("#toolbar"),//工具栏 
+                    //checkbox: true,//是否显示checkbox
+                    maxWidth: 1300,//最大宽度
+                    maxHeight: 300,//最大高度
+                    onLoadError: function () {
+                        alert("请求服务器失败，请刷新页面重试!");
+                    },
+                    onCreating: function (data) {//数据成功加载
+                        addNewRow();//增加一行
+                    },
+                    onClickRow: function (rowIndex, rowData) {
+                        pi = rowIndex;//单击取得所在第多少行
+                        return false;
+                    },
+                   
+
+                    loadFilter: function (data) {
+                        var _data = {};
+                        _data.rows = isUndefined(data.rows) ? data : data.rows;
+                        _data.total = isUndefined(data.total) ? 5 : data.total;
+                        return _data;
+                    }
+                });
+                        
+               });
+        
+    </script>
+}

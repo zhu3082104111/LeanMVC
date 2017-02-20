@@ -1,0 +1,89 @@
+﻿@{
+    Layout = null;
+    }
+<script>
+    // 查询按钮的事件
+    var searchFun = function () {
+        $("#PPInfoTable").datagrid("load");
+    }
+
+    //获得列属性
+    //列属性:field,title,width,sortable,editor,formatter 
+    var _columns = [[
+      
+        ["ID", "物料ID", 100, true],
+        ["PartDtID", "物料编号", 150, true],
+        ["PartDtName", "物料名称", 100, false],
+        ["PartDtSpec", "规格", 100, true],
+        ["BthID", "批次号", 100, true],
+        ["Pricee", "单价", 100, true],
+        ["StoreCls", "让步区分", 100, true],
+        ["WareHouseID", "仓库", 100, true],
+         ["InDate", "入库日期", 130, false, null, function (value, row, index) {
+             var date;
+             var strDt = (value + "").replace(/\/Date\(/, "").replace(/\)\//, "");
+             if (isNaN(strDt)) {
+                 date = strDt.ToDate();
+             } else {
+                 date = new Date(strDt.ToInt());
+             }
+             var str = date.Format("yyyy-MM-dd");
+             row.Addate = str;
+             return str;
+         }]
+
+    ]];
+
+    // 供货商信息列表显示
+    $(function () {
+        Common.Functions.createDataGrid({//创建datagrid,详细内容参见functions.js
+            target: "#PPInfoTable",//table容器,必须
+            //获取数据的地址,必须
+            url: "/Store/Discard/GetBthStockList",
+            columns: _columns,//列属性,必须    
+            checkbox: true,//是否显示checkbox
+            singleSelect:true,
+            autoRowHeight: true,
+            pageSize: 5,
+            pageList:[5],
+            //可以添加一些额外参数,主要用于查询条件
+            onBeforeLoad: function (queryParams) {
+                var arr = $("#ppForm").serializeArray();
+                $.each(arr, function () {
+                    queryParams[this.name] = this.value;
+                });
+            },
+            onLoadError: function () {
+                alert("请求服务器失败，请刷新页面重试!");
+            },
+            onCreating: function (data) {//数据成功加载
+                //do something...
+            }
+        });
+    });
+ 
+</script>
+
+<div style="width:100%;text-align:center;margin-bottom:5px;">
+    <!--标题-->
+    <h3>物料选择画面</h3>
+</div>
+<div class="div_main">
+    <div id="toolbar" class="div_search">
+        <form id="ppForm" name="ppForm"  method='post'>
+            <table class="table_search">
+                <tr>
+                    <td>物料编号：</td>
+                    <td>@UserHelpers.Input("Abbrev", "Abbrev", @ViewBag.abbrev, "")</td>
+                    <td>物料名称：</td>
+                    <td>@UserHelpers.Input("Name", "Name", @ViewBag.name, "")</td>
+                    <td>@UserHelpers.ButtonForSearch("searchFun()")</td>
+                </tr>
+            </table>
+        </form>
+    </div>
+    <div class="div_datagrid"  >
+        <input type='hidden' id='indexlist' name='indexlist' value="@ViewBag.rowindex"/>
+        <table id="PPInfoTable"></table>
+    </div>
+</div>

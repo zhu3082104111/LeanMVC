@@ -1,0 +1,206 @@
+﻿@model int
+
+@*<link rel="stylesheet" href="~/Content/UserInfo/userInfo.css" />*@
+<link rel="stylesheet" href="~/Content/css/Store/WipStore.css">
+<script>
+    var tableName = "#userTable";//待修改
+    var formName = "#searchForm";//待修改
+
+    //根据Enable修改某条记录
+    var updateInfos = function () {
+        var row = $(tableName).datagrid('getSelections');
+        if (row.length > 0) {
+            var checkDeliverID = ""
+            var checkIsetRepID = "";
+            for (var i = 0; i < row.length; i++) {
+                checkDeliverID += row[i].DeliveryOrderID + ",";
+                checkIsetRepID += row[i].IsetRepID + ",";
+            }
+            checkDeliverID = checkDeliverID.substring(0, checkDeliverID.length - 1);
+            checkIsetRepID = checkIsetRepID.substring(0, checkIsetRepID.length - 1);
+            //发送异步请求传递给后台我们所选中的数据
+            $.messager.confirm("友情提示", "确认入库?", function (updateOK) {
+                if (updateOK) {
+                    loginInfos(checkDeliverID, checkIsetRepID);
+                    //$.post("/Store/WipInStore/Edit", { Id: checkID }, function (data) {
+                    //    var _data = eval('(' + data + ')');
+                    //    console.info(_data);
+                    //    if (_data.result == true) {
+                    //        $(tableName).datagrid("reload");
+                     
+                    //    } else {
+                    //        $.messager.alert("友情提示", "入库失败! " + data);
+                    //        //do something another...
+                    //    }
+                    //});
+                }
+            });
+            row.length = 0;
+          
+        } else {
+             $.messager.alert("友情提示", "请选择入库数据! ");
+        }
+    };
+
+    //文本框点击事件
+    function SearchBox(value, name) {
+        alert(value + ":" + name)
+    }
+
+    //转到入库登录页面
+    var loginInfos = function (checkDeliverID, checkIsetRepID) {
+        //var $tabs = parent.$("#tabs");
+        //var $tab = parent.$("#tabs").tabs("getSelected");
+        //$tabs.tabs("update", {
+        //    tab: $tab,
+        //    options: {
+        //        href: "/Store/WipInStore/WipInLogin?deliveryOrderID=" + checkDeliverID + "&isetRepID=" + checkIsetRepID + "", title: "入库登录"
+        //    }
+        //});
+        // parent.addTab("入库登录", "/Store/WipInStore/WipInLogin?deliveryOrderID=" + checkDeliverID + "&isetRepID=" + checkIsetRepID + "");
+        parent.updateTab("/Store/WipInStore/WipInLogin?deliveryOrderID=" + checkDeliverID + "&isetRepID=" + checkIsetRepID + "", "入库登录");
+    }
+    //搜索
+    var searchFun = function () {
+        $(formName).form("submit", {//ajax form提交
+            url: "/Store/WipInStore/Get",
+            onSubmit: function (param) {//除表单外的数据(分页)
+                var pager = $(tableName).datagrid("getPager");
+                var pagerOptions = $(pager).pagination("options");
+                param.rows = pagerOptions.pageSize;
+                param.page = 1;//pagerOptions.pageNumber;
+            },
+            success: function (data) {
+                $(tableName).datagrid("loadData", eval('(' + data + ')'));//重新加载数据
+            }
+        });
+    }
+
+    //关闭窗体
+    function CloseFun() {
+        parent.closeTab(gTitle)
+    }
+
+    //列属性:field,title,width,sortable,editor,formatter
+    var columns = [[
+        ["DeliveryOrderID", "送货单号", 180, true],
+        ["IsetRepID", "检验报告单", 150, true],
+        ["DeliveryCompanyID", "供货商名称", 210, true],
+        ["MaterielID", "物料名称", 210, false],
+        ["ChkDt", "质检交付日时", 150, true, null, function (value, row, index) {
+            var date;
+            var strDt = (value + "").replace(/\/Date\(/, "").replace(/\)\//, "");
+            if (isNaN(strDt)) {
+                date = strDt.ToDate();
+            } else {
+                date = new Date(strDt.ToInt());
+            }
+            var str = date.Format("yyyy-MM-dd");
+            row.ChkDt = str;
+            return row.ChkDt;
+        }]
+    ]];
+
+    $(function () {
+        Common.Functions.createDataGrid({//创建datagrid,详细内容参见functions.js
+            target: tableName,
+            url: "/Store/WipInStore/Get",
+            columns: columns,
+            //idField: "IsetRepID",
+            //toolbar: $("#toolbar"),//工具栏 
+            nowrap: false,
+            checkbox: true,//是否显示checkbox
+            maxWidth: 950,
+            maxHeight: 300,
+            onBeforeLoad: function (queryParams) {//可以添加一些额外参数,主要用于查询条件
+                var arr = $(formName).serializeArray();
+                $.each(arr, function () {
+                    queryParams[this.name] = this.value;
+                });
+            },
+            onLoadError: function () {
+                $.messager.alert("友情提示", "请求服务器失败，请刷新页面重试! "); 
+            },
+            onCreating: function (data) {
+                //do something...
+                var int = self.setInterval("searchFun()", 60000 * 5)
+            }
+        });
+    });
+
+</script>
+
+<style>
+.Search_Table {
+        margin:auto;      
+        text-align:left;
+    }
+</style>
+<div class="buttons" style="width:100%;text-align:right;">
+    @UserHelpers.ButtonForInStorage("updateInfos()")   
+    @if (Model == 1) { //拥有新建权限
+    @UserHelpers.ButtonForClose("CloseFun()")   
+}
+    <span style="width:100px;margin-right:10%">&nbsp;</span>
+</div>
+<div style="width:100%;margin:20px 0;">
+    <hr style="width:100%;color:#95B8E7"/>
+</div>
+<div style="width:100%;text-align:center;">
+    <h2>待入库一览</h2>
+</div>
+<div style="width:100%;text-align:center;margin-bottom:12px;">
+    <div style="width:95%;margin:auto;text-align:left;">
+    <form class="Search_Form" id='searchForm' method='post'>
+       <table class='Search_Table'>
+                <tr>
+                <td>送货单：</td>
+                <td>
+                     <input id='DeliveryOrderID'class="easyui-searchbox" style="width:112px"data-options="searcher:SearchBox,prompt:'',menu:'#mm'" name='DeliveryOrderID'/>
+                </td>
+                <td style="padding-left: 10px">检验报告单：</td>
+                <td>
+                    <input id="IsetRepID" class="easyui-searchbox" style="width:112px"data-options="searcher:SearchBox,prompt:'',menu:'#mm'" name="IsetRepID"/>       
+                </td>
+                <td style="padding-left: 10px">供货商：</td>
+                <td>
+                   @UserHelpers.Input("DeliveryCompanyID","ShowCompInfoScreen();")
+                </td>
+                 <td style="padding-left: 10px">质检日期：</td>
+                <td>
+                   @UserHelpers.TimeInput("StartDt")
+                </td>
+                <td>~@UserHelpers.TimeInput("EndDt")</td>                
+                
+                </tr>
+                <tr>                
+                <td>物料编号：</td>
+                <td>
+                   @UserHelpers.Input("MaterielID","ShowProdPartInfoScreenByAbbrev();")
+                </td>
+                <td style="padding-left: 10px">物料名称：</td>
+                <td>
+                   @UserHelpers.Input("MaterielName","ShowProdPartInfoScreenByAbbrev();")
+                </td>
+                <td>             
+                </td>
+                 <td>                 
+                </td>
+                <td>             
+                </td>
+                 <td>                 
+                </td>
+                 <td style="text-align: right">
+                   @UserHelpers.ButtonForSearch("searchFun()")
+                </td>
+                </tr>
+              </table>
+    </form>
+   </div>
+</div>
+
+<div class="datagrid" style="text-align:center;width:100%;">
+    <table id="userTable"></table>
+</div>
+
+

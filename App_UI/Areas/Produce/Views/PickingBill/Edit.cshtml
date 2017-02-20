@@ -1,0 +1,327 @@
+﻿@model IEnumerable<VM_ProduceMaterDetailForDetailShow>
+@using Model.Produce
+@using Model
+@{
+    ViewBag.Title = "Edit";
+   
+}
+
+<style type="text/css">
+    .detail_div {
+        margin-left:5%;
+        margin-right:5%;
+    }
+    .form_detail {
+    
+    }
+
+    .a {
+        font-size: 24px;
+        color: red;
+    }
+
+    .table_detail {
+        width: 100%;
+        height:100%;
+        border-collapse: collapse;
+        border-width: 0px;
+    }
+
+    .table_detail td {
+        border-style:solid;
+        border-color: #838383;
+        border-width: 1px;
+        text-align: center;
+        font-size: 15px;
+        height:100%;
+    }
+
+    .table_detail .tr_thead {
+        text-align: center;
+    }
+    
+
+
+    .table_detail tr {
+      
+        color: #2B5E80;
+        font-weight: 700;
+    }
+
+    .table_detail .height30 {
+        height: 30px;
+    }
+
+    .tr_thead td {
+        filter: alpha(opacity=100 finishopacity=100 style=1 startx=0,starty=0,finishx=0,finishy=150) progid:DXImageTransform.Microsoft.gradient(startcolorstr='#f6f6f6',endcolorstr='#d8d8da',gradientType=0);
+        -ms-filter: alpha(opacity=100 finishopacity=100 style=1 startx=0,starty=0,finishx=0,finishy=150) progid:DXImageTransform.Microsoft.gradient(startcolorstr='#f6f6f6',endcolorstr='#d8d8da',gradientType=0); /*IE8*/
+        background: -moz-linear-gradient(top, red, rgba(0, 0, 255, 0.5));
+        background: -webkit-gradient(linear, 0 0, 0 bottom, from(#f6f6f6), to(rgba(216, 216, 218, 1)));
+    }
+    .table_detail .css3div {
+        font-size:inherit;
+         filter: alpha(opacity=100 finishopacity=100 style=1 startx=0,starty=0,finishx=0,finishy=150) progid:DXImageTransform.Microsoft.gradient(startcolorstr='#f6f6f6',endcolorstr='#d8d8da',gradientType=0);
+        -ms-filter: alpha(opacity=100 finishopacity=100 style=1 startx=0,starty=0,finishx=0,finishy=150) progid:DXImageTransform.Microsoft.gradient(startcolorstr='#f6f6f6',endcolorstr='#d8d8da',gradientType=0); /*IE8*/
+        background: -moz-linear-gradient(top, red, rgba(0, 0, 255, 0.5));
+        background: -webkit-gradient(linear, 0 0, 0 bottom, from(#f6f6f6), to(rgba(216, 216, 218, 1)));
+    }
+    .table_detail .css3td {
+        filter: alpha(opacity=100 finishopacity=100 style=1 startx=0,starty=0,finishx=0,finishy=150) progid:DXImageTransform.Microsoft.gradient(startcolorstr='#f6f6f6',endcolorstr='#d8d8da',gradientType=0);
+        -ms-filter: alpha(opacity=100 finishopacity=100 style=1 startx=0,starty=0,finishx=0,finishy=150) progid:DXImageTransform.Microsoft.gradient(startcolorstr='#f6f6f6',endcolorstr='#d8d8da',gradientType=0); /*IE8*/
+        background: -moz-linear-gradient(top, red, rgba(0, 0, 255, 0.5));
+        background: -webkit-gradient(linear, 0 0, 0 bottom, from(#f6f6f6), to(rgba(216, 216, 218, 1)));
+    }
+
+    .table_detail .tr_data {
+        background-color: white;
+    }
+
+    .table_detail .tr_data td {
+    }
+
+    td .td_detail_input {
+        width: 32px;
+        height: 32px;
+    }
+
+    .form_detail {
+        width: 100%;
+        height: 100%;
+    }
+
+    .detail-div_head {
+        width: 100%;
+        margin-bottom: 10px;
+        position: relative;
+        float: left;
+        display: inline;
+    }
+
+    #box {
+        border: 1px solid #696;
+        padding: 60px 0;
+        text-align: center;
+        width: 100%;
+        box-shadow: #666 0px 2px 3px; /*CSS3*/
+        background: #EEFF99;
+        background: -webkit-gradient(linear, 0 0, 0 bottom, from(#EEFF99), to(#66EE33)); /*Safari、Chomre*/
+        background: -moz-linear-gradient(#EEFF99, #66EE33); /*Firefox*/
+        background: linear-gradient(#FFFFFF, rgba(199, 199, 199, 0.59));
+    }
+
+    .width_33 {
+        width: 33%;
+    }
+    .height_22 {
+        height:22px;
+        line-height:22px;
+    }
+    .height_38 {
+        height:38px;
+        line-height:38px;
+    }
+     .height_47 {
+        height:47px;
+        line-height:47px;
+    }
+
+    .display_inline {
+        display: inline;
+    }
+
+    .span_title {
+        font-size: 18px;
+        width: 33%;
+    }
+
+    .span_orderId {
+        margin-left: 28%;
+        width: 33%;
+    }
+
+    .font_red {
+        color: red;
+    }
+
+    .font_size16 {
+        font-size: 16px;
+    }
+
+    .align_center {
+        text-align: center;
+    }
+
+    .align_left {
+        text-align: left;
+    }
+
+    .margin_bottom20 {
+        margin-bottom: 20px;
+    }
+
+    .margin_top20 {
+        margin-top: 20px;
+    }
+
+    .display_block {
+        display: block;
+    }
+
+    .input_width {
+        width: 45px;
+    }
+
+    .width85 {
+        width: 115px;
+    }
+
+    .gradient {
+        width: 300px;
+        height: 150px;
+        filter: alpha(opacity=100 finishopacity=50 style=1 startx=0,starty=0,finishx=0,finishy=150) progid:DXImageTransform.Microsoft.gradient(startcolorstr='#FFFFFF',endcolorstr='#c4c0c0',gradientType=0);
+        -ms-filter: alpha(opacity=100 finishopacity=50 style=1 startx=0,starty=0,finishx=0,finishy=150) progid:DXImageTransform.Microsoft.gradient(startcolorstr='#FFFFFF',endcolorstr='#c4c0c0',gradientType=0); /*IE8*/
+        background: red; /* 一些不支持背景渐变的浏览器 */
+        background: -moz-linear-gradient(top, red, rgba(0, 0, 255, 0.5));
+        background: -webkit-gradient(linear, 0 0, 0 bottom, from(#FFFFFF), to(rgba(209, 209, 209, 0.8)));
+    }
+    .margin_left_34 {
+        margin-left: 34%;
+    }
+   
+     .table_head .tdTitle {
+        width:8%;
+    }
+     .table_head .tdVlaue {
+        width:24%;
+        text-align:left;
+    }
+    .table_Bottom td {
+        width:80px;
+    }
+</style>
+<script type="text/javascript">
+    var operator_Btn_Ensure_Fun = function () {
+
+        $("#Detail_Form").formSubmit([
+                "/Produce/PickingBill/EditSave",
+                function (param) {
+                    return true;
+                    //console.info($(data_Table_Name).find("input:checkbox").is(":checked"));
+                },
+                function (data) {
+                    var _data = eval('(' + data + ')');
+                    if (_data.result == false) {//返回的结果(true/false)
+                        alert("领料单修改成功！");
+                        return;
+                    } else {//成功
+                        alert(_data.Message);
+                    }
+                }
+        ]);
+
+    };
+    function pageClose() {
+        parent.closeTab();
+
+    }
+</script>
+<div class="detail_div">
+    <div class="FunctionButton_Area">
+        @UserHelpers.ButtonForSave("operator_Btn_Ensure_Fun()")
+        @UserHelpers.ButtonForClose("pageClose()")
+        @UserHelpers.Line()
+    </div>    
+    <form id="Detail_Form" method="post" class="form_detail Search_Form">
+        <div class="detail-div_head display_inline">
+            <div>
+                 @UserHelpers.Title("物料领用单", "")
+            </div>
+            <div style="font-size:14px;float:right;">
+                <div style="width:250px;height:70px;margin-top:-20px;border-style:solid;border-color:red;border-width:1px;"></div>
+                <div class="display_inline">
+                    <span class="span_orderId font_red">单号：@ViewData["PickingNo"]<input type="hidden" class="" name="PickingNo" value="@ViewData["PickingNo"]" /></span>
+                </div>
+            </div>
+
+        </div>
+        <div class="align_left margin_bottom20">
+            <table class="table_head">
+                <tr>
+                    <td class="tdTitle">领料来源：</td>
+                    <td class="tdVlaue"> @ViewData["comFrom"]<input name="comFrom" value="@ViewData["comFrom"]" type="hidden"/></td>
+                    <td class="tdTitle">来源单号：</td>
+                    <td class="tdVlaue">@ViewData["ProcDelivID"]@ViewData["AssemBillID"]<input name="ProcDelivID" value="@ViewData["ProcDelivID"]" type="hidden"/><input name="AssemBillID" value="@ViewData["AssemBillID"]" type="hidden"/><input name="ProcessID" value="@ViewData["ProcessID"]" type="hidden"/><input name="ExportID" value="@ViewData["ExportID"]" type="hidden"/></td>
+                    <td  style="width:20%;text-align:right">领用日期：</td>
+                    <td class="tdVlaue " style="text-align:right"> @ViewData["PickingDate"]</td>
+                </tr>
+            </table>
+        </div>
+        <table class="datagrid-htable table_detail ">
+            <tr class="datagrid-header-row ">
+                <td class=""><div class="css3div height_38">领用部门：</div></td>
+                <td colspan="2">@ViewData["PickingUnit"]
+                </td>
+                <td class=""><div class="css3div height_38">用途:</div></td>
+                <td colspan="6">
+                    <input value="@ViewData["Purpose"]" name="Purpose" style="width: 90%; height: 28px;" type="text" />
+                </td>
+            </tr>
+            <tr class="datagrid-header-row ">
+                <td class="width85" rowspan="2"><div class="css3div height_47">编号：</div></td>
+                <td class="width85 " rowspan="2"><div class="css3div height_47 ">材料型号</div></td>
+                <td class="width85 " rowspan="2"><div class="css3div height_47">材料名称</div></td>
+                <td class="width85 " rowspan="2"><div class="css3div height_47">规格型号</div></td>
+                <td class="width85 " rowspan="2" ><div class="css3div height_47">批次</div></td>
+                <td class="width85 " rowspan="2" ><div class="css3div height_47">单位</div></td>
+                <td class="width85" colspan="2"  style="width:108px"><div class="css3div height_22">数量</div></td>
+                <td class="width85 " rowspan="2"><div class="css3div height_47">单价</div></td>
+                <td class="width85 " rowspan="2"><div class="css3div height_47">金额</div></td>
+            </tr>
+            <tr class="datagrid-header-row ">
+                <td style="width:59px"><div class="css3div height_22">请领</div></td>
+                <td style="width:59px"><div class="css3div height_22" style="margin-right:1px;">实发</div></td>
+            </tr>
+            @{int i=0;
+                foreach (var o in Model)
+                {
+                    i++;
+                    <tr style="background-color:white;color:black;font-size:15px;font-weight:500">
+                    <td>@i<input name="MaterReqDetailNo" value="@o.MaterReqDetailNo" type="hidden"/><input type="hidden" name="MaterialID" value="@o.MaterialID"/><input type="hidden" name="CustomerOrderNum" value="@o.ClnOdrID"/><input type="hidden" name="CustomerOrderDetails" value="@o.ClnOdrDtl"/></td>
+                    <td>@o.PartModel</td>
+                    <td>@o.PartName</td>
+                    <td>@o.PdtSpec</td>
+                    <td>@o.BthID<input type="hidden" name="BthID" value="@o.BthID"/><input type="hidden" name="OrdeBthDtailListID" value="@o.OrdeBthDtailListID"/><input value="@o.WHID" name="WHID" type="hidden"/></td>
+                    <td>@o.Unit</td>
+                    <td><input type="text" name="PleasePickingCount" value="@o.PleasePickingCount.ToString("0")" style="width:40px;" title="@o.PleasePickingCount.ToString("0")"/><input  name="LastPleasePickingCount" type="hidden" value="@o.PleasePickingCount.ToString("0")" /></td>
+                    <td>@o.RealPickingCount.ToString("0")</td>
+                    <td>@o.UnitPrice</td>
+                    <td><span id="totalPricw">0.0</span></td>
+                    </tr>
+                }
+                
+                
+                }
+        </table>
+        <div class="margin_top20">
+            <table class="table_Bottom" style="width:100%;margin:auto">
+                <tr class="font_size16">
+                    <td>仓管员：</td>
+                    <td><input type="text" value="张玉" style="width:80px;"/></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td>部门审核：</td>
+                    <td><input type="text" value="凌二宇" style="width:80px;"/></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td>领料人：</td>
+                    <td><input type="text" name="MaterHandlerID" value="王丽" style="width:80px;"/></td>
+                </tr>
+
+            </table>
+           
+        </div>
+    </form>
+
+</div>

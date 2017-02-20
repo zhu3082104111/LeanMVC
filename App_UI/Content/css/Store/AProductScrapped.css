@@ -1,0 +1,11 @@
+﻿body {
+}
+
+ .datagrid > div {
+        margin:auto;
+    }
+
+    ._text_input
+    {
+        width: 100px;
+    }

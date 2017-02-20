@@ -1,0 +1,85 @@
+﻿@{
+    ViewBag.Title = "Modify";
+}
+<style >
+    #tbModSupplier{
+        border:1px solid #808080;
+        border-collapse : collapse ;
+        width:600px;height:auto;   
+    }
+    #tbModSupplier tr, td
+    {
+        border:1px solid #808080;  
+    }
+    ._tb_title
+    {
+        text-align :center ;
+        background-color :#F1F1F2;
+        color:#0F5C80 ;  
+        width:20%; 
+    }
+    ._tb_content
+    {
+        padding :1px 3px 3px 1px;
+    }
+    .easyui-datebox
+    {
+        width:165px;
+    }
+ 
+</style>
+<script>
+    //保存数据
+    var SaveFun = function () {
+
+    }
+    //关闭窗口
+    var closeFun = function () {
+
+    }
+</script>
+<!--上面的页面导航-->
+<div class="buttons" style="width:100%;text-align:right;">
+    <a class="easyui-linkbutton" iconCls1='icon-save' plain="false" onclick='SaveFun();'>保存</a>
+    <a href='javascript:void(0);' class='easyui-linkbutton' iconCls1='icon-close' onclick='closeFun();'>关闭</a>
+    <span style="width:100px;margin-right:10%">&nbsp;</span>
+</div>
+<!--分割线-->
+<div class ="_line" style="width:100%;margin:20px 0;">
+    <hr style="width:100%;color:#95B8E7"/>
+</div>
+<!--界面-->
+<div style="width:100%;text-align:center;margin-bottom :50px;">
+    <!--标题-->     
+    <h2>外协产品进度</h2>
+</div>
+<div style="width:100%;text-align:center;">
+    <div style="width:50%;margin:auto;text-align :left;">
+        <form id="processForm">
+            <table id ="tbModSupplier">
+                <tr>
+                    <td class="_tb_title">外协单号</td>
+                    <td class="_tb_content"><input class="" name="" /></td>
+                    <td class="_tb_title">达成率</td>
+                    <td class="_tb_content"><input class="" name="" /></td>                      
+                </tr>
+                <tr>
+                    <td class="_tb_title">物料名称</td>
+                    <td class="_tb_content"><input class="" name="" /></td>
+                    <td class="_tb_title">到货日期</td>
+                    <td class="_tb_content"><input class="easyui-datebox" name="ReceiveDate"  /></td>                       
+                </tr>
+                <tr>
+                    <td class="_tb_title">物料型号</td>
+                    <td class="_tb_content"><input class="" name="" /></td>
+                    <td class="_tb_title">到货数量</td>
+                    <td class="_tb_content"><input class="" name="" /></td> 
+                </tr>
+                <tr>
+                    <td class="_tb_title">供应商名称</td>
+                    <td class="_tb_content" colspan ="3"><input class="" name="" style="width:98%"/></td>
+                </tr>
+            </table>           
+        </form>
+    </div>
+</div>

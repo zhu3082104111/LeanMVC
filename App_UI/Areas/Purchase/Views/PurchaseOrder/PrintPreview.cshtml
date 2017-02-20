@@ -1,0 +1,101 @@
+﻿@using App_UI.Resource.ViewText.Common
+@using App_UI.Resource.ViewText.Purchase
+@using Model
+
+@model string
+<link rel="stylesheet" href="~/Content/css/Admin/userInfo.css" />
+<script type="text/javascript" src="~/Scripts/purchase/PurchaseOrderPrintPreview.js"></script>
+
+<div class="FunctionButton_Area noprint" style="width:100%;text-align:right;">
+    @UserHelpers.ButtonForPrint("printInfo()")
+    @UserHelpers.ButtonForClose("parent.closeTab(gTitle)")  
+</div>
+
+<!--分割线-->
+@UserHelpers.Line()
+
+<div style="text-align:center;font-size:20px;">
+    <!-- 页面标题 -->
+    @UserHelpers.Title(@VT_PurchaseOrderList.EditTitle)
+</div><br />
+
+<!-- 隐藏项 -->
+    <input type="hidden" id="data" value="@ViewBag.OutOrderID" />
+
+<!-- 搜索块 -->
+<div style="width: 100%; text-align: center; margin-bottom: 15px;">
+    <div style="width: 95%; margin: auto; text-align: left;">
+        <form id="searchForm" method="post">
+            <table style="padding-left:150px;">
+                <tr>
+                    <td>@VT_PurchaseOrderList.UrgentStatus：
+                                @if (ViewBag.UrgentStatus == VT_PurchaseOrderList.UrgentStatus2)
+                                {
+                                    <label style="color:red">@ViewBag.UrgentStatus</label>
+                                }
+                                else if (ViewBag.UrgentStatus == VT_PurchaseOrderList.UrgentStatus1)
+                                { 
+                                    <label style="color:yellow">@ViewBag.UrgentStatus</label>
+                                }
+                                else
+                                {
+                                    <label>@ViewBag.UrgentStatus</label>
+                                }
+                            </td>
+                    <td style="width:150px;"></td>
+                    <td>
+                        @VT_PurchaseOrderList.OutOrderStatus:
+                        <label id="OutOrderStatus">@ViewBag.OutOrderStatus</label>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="height:40px;">
+                        @VT_PurchaseOrderList.CName：<label>@ViewBag.CompName</label>
+                    </td>
+                    <td></td>
+                    <td>@VT_PurchaseOrderList.OutOrderID：<label>@ViewBag.OutOrderID</label></td>
+                </tr>
+                <tr>
+                    <td style="height:40px;">@VT_PurchaseOrderList.DeptName：<label>@ViewBag.DeptName</label></td>
+                    <td></td>
+                    <td>@VT_PurchaseOrderList.EstDate:
+                        <label>@ViewBag.EstablishDate</label>
+                    </td>
+                </tr>
+            </table>
+        </form>
+    </div>
+</div>
+
+<div class="datagrid" style="text-align:center;width:100%;">
+    <table id="purchaseOrderTable" ></table>
+    
+</div>
+<div>
+    <table style="width:900px;height:auto;margin:auto">
+        <tr style="height:40px;">
+            <td style="width:75px;">@VT_PurchaseOrderList.ApproveUID</td>
+            <td style="width:150px;">
+                <label>@ViewBag.ApproveUID</label>
+            </td>
+            <td style="width:75px;">@VT_PurchaseOrderList.VerifyUID</td>
+            <td style="width:150px;">
+                <label>@ViewBag.VerifyUID</label>
+            </td>
+            <td style="width:75px;">@VT_PurchaseOrderList.EstUID</td>
+            <td style="width:150px;">
+                <label>@ViewBag.EstablishUID</label>
+            </td>
+            <td style="width:75px;">@VT_PurchaseOrderList.SignUID</td>
+            <td style="width:150px;">
+                <label>@ViewBag.SignUID</label>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="6" style="text-align:left">@VT_PurchaseOrderList.Remarks<label>@ViewBag.Remarks</label></td>
+            <td>@VT_PurchaseOrderList.FaxNo</td><td><label>@ViewBag.FaxNo</label></td>
+        </tr>
+    </table>
+    
+</div>
+

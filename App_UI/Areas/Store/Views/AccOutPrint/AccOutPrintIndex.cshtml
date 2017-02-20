@@ -1,0 +1,374 @@
+﻿@using Model;
+@model VM_AccOutPrintIndexForInfoShow
+
+
+@section head{
+    <!---- style ---->
+    <style type="text/css">
+        #ShowAccOutPrintPreviewLayoutDIV{
+            margin:0px;
+            padding:0px;
+            text-align:center;
+
+            /*border:1px solid blue;*/
+        }
+
+        #ShowAccOutPrintPreviewLayoutDIV span{
+            margin:0px;
+            padding:0px;
+
+            /*border:1px solid blue;*/
+	    }
+
+        #ShowAccOutPrintPreviewLayoutDIV .SetCenterDIV{
+            margin:0 auto;
+            padding:0px;
+            text-align:left;
+            width:910px;
+
+            /*border:1px solid blue;*/
+        }
+
+
+        /* Button Layout */
+        #ShowAccOutPrintPreviewLayoutDIV .FunctionButton_Area .CloseButton_Menument{
+            margin: 0px 5px;
+        }
+
+
+        /* Title Layout */
+        #ShowAccOutPrintPreviewLayoutDIV .PageTitle_div{
+            margin:0px;
+            padding:0px;
+
+            /*border:1px solid blue;*/
+        }
+
+        #ShowAccOutPrintPreviewLayoutDIV .PageTitle_div #PrintInformationSpan{
+            margin:0px 0px 0px 0.5%;
+        }
+
+
+        /* ShowSemOutPrintPreview Layout */
+        #ShowAccOutPrintPreviewLayoutDIV .ShowSemOutPrintPreviewDIV{
+            margin:2% 0px 0px 0px;
+            padding:0px;
+            text-align:left;
+
+            /*border:1px solid blue;*/
+        }
+
+
+        /* Table Layout */
+        #ShowAccOutPrintPreviewLayoutDIV .ContentManageDIV{
+            margin:2% 0px 0px 0px;
+            padding:0px;
+
+            /*border:1px solid blue;*/
+        }
+
+        
+
+    </style>
+
+
+    <!-- javascript -->
+    <script>
+        (function ($) {
+            /********* 自定义函数 *********/
+            var GetDateFun = function () {
+                var dateTime, formatDate;
+
+                dateTime = new Date();
+                formatDate = dateTime.getFullYear();
+                formatDate = formatDate + "/" + (dateTime.getMonth() + 1);
+                formatDate = formatDate + "/" + dateTime.getDate();
+
+                return formatDate;
+            }
+
+
+            /********* 功能函数 *********/
+            //关闭
+            window.CloseFun = function () { }
+
+            //打印
+            window.PrintFun = function () {
+
+            }
+
+
+            /********* 表格函数 *********/
+            //获取绑定字符串
+            var GetBindAOPPSFun = function () {
+                var getBindAccOutPrintPreviewString = Common.Functions.createDataGrid({//创建datagrid,详细内容参见functions.js
+                    columns: GetAOPPCFun(),
+                    loadFilter: function (data) {
+                        var accOutPrintPreviewLoadFilter = {};
+                        accOutPrintPreviewLoadFilter.rows = data.rows ? data.rows : data;
+                        accOutPrintPreviewLoadFilter.total = data.total ? data.total : 0;
+
+                        return accOutPrintPreviewLoadFilter;
+                    },
+                    pagination: false,
+                    singleSelect: true,
+                    target: "#AccOutPrintPreviewTable",
+                    url: "/Store/AccOutPrint/GetPreview?saeetID=@ViewBag.SaeetID&bthIDArr=@ViewBag.BthIDArr&pickListDetNoArr=@ViewBag.PickListDetNoArr",
+                    //事件
+                    onClickRow: function () { return false; }, //end onClickRow
+                    onCreating: function (data) {
+                        if (data.rows.length > 0) { //如果远程加载有数据
+                            for (var i = 0; i < $("#AccOutPrintPreviewTable").datagrid("getRows").length; i++) //遍历表中数据
+                            {
+                                if ($("#AccOutPrintPreviewTable").datagrid("getRows")[i]["PrintFlg"] == "1") //判断是否记录是否有被打印
+                                {
+                                    $("#PrintInformationSpan").text("(补)");
+                                    return;
+                                }
+                            } //end for
+                        } //end if
+                    }, //end onCreating
+                    onDblClickRow: function () { return false; }, //end onDblClickRow
+                    onLoadError: function () {
+                        alert("友情提示", "请求服务器失败，请刷新页面重试! ");
+                    } //end onLoadError
+                });
+                return getBindAccOutPrintPreviewString
+            } //end GetBindSOPSFun
+
+            //获取列属性
+            var GetAOPPCFun = function () {
+                var getAccOutPrintPreviewColumns = [[
+                    //列属性:field(字段,非空) ,title(列名,非空),width(默认80),sortable(默认false),editor(默认null),formatter(默认-函数)
+                    ["PickListDetNo", "编号", 100],
+                    ["ProductName", "产品名称", 200],
+                    ["TecnProcessName", "加工工艺", 200],
+                    ["UnitName", "单位", 100],
+                    ["Quantity", "数量", 100],
+                    ["Remarks", "备注", 200]
+                ]]
+                return getAccOutPrintPreviewColumns;
+            } //end GetColumnsFun
+
+
+            /********* 页面加载 *********/
+            $(function () {
+                GetBindAOPPSFun();
+                $("#DateSpan").text(GetDateFun());
+                //$("#AccOutPrintPreviewTable").datagrid("loadData", InitSOPDFun());
+                
+            }) //end $(function () {})
+   
+        }(jQuery));
+    </script>
+}
+
+
+<!-- layout -->
+<div id="ShowAccOutPrintPreviewLayoutDIV">
+    <!-- Button -->
+    <div class="FunctionButton_Area">@UserHelpers.ButtonForPrint("PrintFun()")@UserHelpers.ButtonForClose("CloseFun()")</div>
+
+
+    <!-- Line -->
+    <div class="LevelLine_div"><hr /></div>
+
+
+    <!-- Title -->
+    <div class="PageTitle_div"><span>出库单打印选择</span><span id="PrintInformationSpan"></span></div>
+
+
+    <!-- Information -->
+    <div class="ShowSemOutPrintPreviewDIV">
+        <div class="SetCenterDIV"><span style="margin:0px 0px 0px 72%;">单号：</span><span style="display:inline-block;width:20%;">@Model.SaeetID</span></div>
+        <div class="SetCenterDIV" style="margin-top:0.5%;"><span>调入单位：</span><span style="display:inline-block;width:30%;">@Model.CallinUnitName</span><span style="margin:0px 0px 0px 33.4%;">日期：</span><span id="DateSpan" style="display:inline-block;width:20%;"></span></div>
+    </div>
+
+
+    <!-- Table -->
+    <div class="ContentManageDIV">
+        <div class="SetCenterDIV"><table id="AccOutPrintPreviewTable" style="width:910px;"></table></div>
+    </div>
+
+    <div class="SetCenterDIV" style="margin-top:2%;"><span>审批人：</span><span style="display:inline-block;width:12%;"></span><span style="margin:0px 0px 0px 21%;">领料人：</span><span style="display:inline-block;width:12%;">@Model.MaterHandlerName</span><span style="margin:0px 0px 0px 21%;">制单人：</span><span style="display:inline-block;width:12%;">@Model.WareHouseKpName</span></div>
+
+</div>
+
+
+
+@*<link rel="stylesheet" href="~/Content/css/Store/AccStore.css">*@
+@*
+<script>
+
+    var tableName = "#userTable";//待修改
+    var formName = "#searchForm";//待修改
+    //var form4Add = "#form4Add";
+    //var form4Update = form4Add;
+
+    //var model = ["add", "update"];
+    //var addOrUpdate;//标志:添加还是修改
+
+    //var Id;//暂存修改时的id(主键)
+
+    //搜索
+    var searchFun = function () {
+        $(formName).form("submit", {//ajax form提交
+            url: "/Store/ProProduct/Get",       
+            success: function (data) {
+                $(tableName).datagrid("loadData", eval('(' + data + ')'));//重新加载数据
+            }
+        });
+    }
+
+    function SearchBox(value, name) {
+        alert(value + ":" + name)
+    }
+
+    function printFun() {
+        window.print();
+        alert("打印功能");
+    }
+
+    function saveFun() {
+        alert("保存功能");
+    }
+
+
+    function radioFun(value) {
+        alert(value + "单选功能");
+    }
+
+    //列属性:field,title,width,sortable,editor,formatter
+    var columns = [[
+        ["DeliverId", "编号", 140, true],
+        ["SupplierName", "产品名称", 120, true],     
+        ["MatterName", "加工工艺", 90, true],
+        ["MatterName", "单位", 90, true],
+        ["Aduser", "数量", 90, true],
+        ["Paydate", "备注", 180, true, true, function (value, row, index) {
+            var date;
+            var strDt = (value + "").replace(/\/Date\(/, "").replace(/\)\//, "");
+            if (isNaN(strDt)) {
+                date = strDt.ToDate();
+            } else {
+                date = new Date(strDt.ToInt());
+            }
+            var str = date.Format("yyyy-MM-dd");
+            row.Paydate = str;
+            if (row.SupplierName != undefined) {
+                document.getElementById("SupplierName").innerHTML = row.SupplierName;
+                document.getElementById("MatterName").innerHTML = row.MatterName;
+                document.getElementById("DeliverId").innerHTML = row.DeliverId;
+                document.getElementById("Id").innerHTML = row.Id;
+                document.getElementById("Paydate").innerHTML = str;
+            }
+            return ;
+        }]
+
+    ]];
+
+    $(function () {
+        var preview_materielID = $("#preview_materielID").val();
+        Common.Functions.createDataGrid({//创建datagrid,详细内容参见functions.js
+            target: tableName,
+            url: "/Store/AccOutPrint/AccOutPrintPreview?Pid=" + preview_materielID + "",
+            columns: columns,
+            showFooter: true,
+            rownumbers: true,
+            idField: "Id",
+            toolbar: $("#toolbar"),//工具栏 
+            maxWidth: 950,
+            maxHeight: 500,
+            pagination: false,
+            onBeforeLoad: function (queryParams) {//可以添加一些额外参数,主要用于查询条件
+                var arr = $(formName).serializeArray();
+                $.each(arr, function () {
+                    queryParams[this.name] = this.value;
+                   
+                });
+            },
+            onLoadError: function () {
+                $.messager.alert("友情提示", "请求服务器失败，请刷新页面重试! "); 
+            },
+            onCreating: function (data) {
+                //do something...
+                //for (var i = 0 ; i < 1 ; i++) {
+                //    $(tableName).datagrid("appendRow", {
+                //        "Paydate": " ",
+                //        "DeliverId":"合计",
+                //        "Aduser": "合计数量"
+
+
+                //    });
+                //}
+                //setTimeout(function () {
+                //    $(tableName).datagrid("mergeCells", { index: 2, field: "DeliverId", colspan: 4 })
+                //}, 100);
+            }
+            //}, loadFilter: function (data) {
+            //    var _data = {};
+            //    _data.rows = data.rows ? data.rows : data;
+            //    _data.footer = [{ SupplierName: "sum" }];
+            //    return _data;
+            //}
+        });
+    });
+
+</script>
+*@
+
+@*
+<div class="buttons" style="width:100%;text-align:right;"><br />
+    <a href='javascript:void(0);' class='easyui-linkbutton' iconCls='icon-print' onclick='printFun();'>打印</a>
+    <a class="easyui-linkbutton" iconCls='icon-cancel' onclick='parent.closeTab(gTitle);'>关闭</a>
+    <span style="width:100px;margin-right:10%">&nbsp;</span>
+</div>
+<div style="width:100%;margin:20px 0;">
+    <hr style="width:100%;color:#95B8E7"/>
+</div>
+<div style="width:100%;text-align:center;">
+    <h2>加工产品出库单  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(补印)<label id='DeliverId0' style="width:120px" aria-setsize=30></label></h2><br /> 
+</div>
+<div class="datagrid" style="text-align:center;width:100%;">
+    <table id="userTable"></table>
+</div>
+        <div style="width:100%;text-align:left"><br />     
+            &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+            &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  
+           审批人：<label id='SupplierName' style="width:120px"></label>
+*@
+                 @*<input id='SupplierName'style="width:120px" type='text' class='easyui-validatebox' name='SupplierName'/>*@
+            @*
+            &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;  
+            领料人：<label id='MatterName' style="width:120px"></label>
+            &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; 
+            制单人：<label id='Id' style="width:120px"></label>
+          
+</div>
+
+<div id="toolbar" style='display:none'>
+    <form id='searchForm' method='post'>
+        <br/>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        单号：<label id='DeliverId' style="width:120px "; ></label>
+        <br/><br />
+        &nbsp;&nbsp;调入单位：<label id='' style="width:120px"></label>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        &nbsp;&nbsp;&nbsp;日期：<label id='Paydate' style="width:120px"></label>
+       
+    </form><br/>
+        <input id="preview_materielID" type="hidden" value="@ViewBag.Outpreview_materielID" />
+</div>
+*@
+
+
